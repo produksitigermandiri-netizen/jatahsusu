@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jatah Karyawan - PT. Tigermandiri Pratama</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f5f5f4;
+      --bg3: #e7e5e4;
+      --text: #1c1917;
+      --text2: #57534e;
+      --text3: #a8a29e;
+      --border: rgba(0,0,0,0.1);
+      --border2: rgba(0,0,0,0.2);
+      --info-bg: #eff6ff;
+      --info: #1d4ed8;
+      --success: #15803d;
+      --danger: #b91c1c;
+      --radius: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1917;
+        --bg2: #292524;
+        --bg3: #3c3735;
+        --text: #fafaf9;
+        --text2: #a8a29e;
+        --text3: #57534e;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.2);
+        --info-bg: #1e3a5f;
+        --info: #93c5fd;
+        --success: #4ade80;
+        --danger: #f87171;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    #app {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem;
+    }
+
+    /* ---- LOADING ---- */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 60vh;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--info);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---- TOPBAR ---- */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 0.5px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); margin-right: auto; }
+
+    /* ---- BUTTONS ---- */
+    .btn {
+      padding: 0 14px;
+      height: 32px;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border2);
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .btn:hover { background: var(--bg2); }
+    .btn.active { background: var(--bg2); font-weight: 500; border-color: var(--border2); }
+    .btn-sm { height: 28px; font-size: 12px; padding: 0 10px; }
+    .btn-primary { color: var(--info); border-color: var(--info); }
+    .btn-primary:hover { background: var(--info-bg); }
+    .btn-danger { color: var(--danger); border-color: var(--danger); font-size: 11px; height: 26px; padding: 0 10px; }
+    .btn-danger:hover { opacity: .8; }
+    .btn-block { width: 100%; height: 38px; font-size: 14px; font-weight: 500; color: var(--info); border-color: var(--info); }
+    .btn-block:hover { background: var(--info-bg); }
+
+    /* ---- HOME SCREEN ---- */
+    .home-hero { margin-bottom: 2rem; }
+    .home-hero h1 { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+    .home-hero p { color: var(--text2); font-size: 13px; }
+    .role-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+    .role-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .role-card:hover { border-color: var(--info); background: var(--bg2); }
+    .role-icon { width: 38px; height: 38px; background: var(--bg2); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 18px; }
+    .role-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .role-desc { font-size: 12px; color: var(--text2); }
+    .sa-link { text-align: center; }
+    .sa-link button { background: none; border: none; font-size: 12px; color: var(--text3); cursor: pointer; text-decoration: underline; }
+    .sa-link button:hover { color: var(--text2); }
+
+    /* ---- LOGIN CARD ---- */
+    .login-wrap { display: flex; justify-content: center; padding: 1rem 0; }
+    .login-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      width: 100%;
+      max-width: 360px;
+    }
+    .login-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .login-card .sub { font-size: 12px; color: var(--text2); margin-bottom: 1.5rem; }
+    .back-link { margin-top: .75rem; text-align: center; }
+    .back-link button { background: none; border: none; font-size: 12px; color: var(--text3); cursor: pointer; }
+    .err-msg { font-size: 12px; color: var(--danger); margin-top: 6px; min-height: 18px; }
+
+    /* ---- FORM ELEMENTS ---- */
+    .field { margin-bottom: 1rem; }
+    .field label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+    .field input[type=text],
+    .field input[type=email],
+    .field input[type=password],
+    .field select {
+      width: 100%;
+      font-size: 13px;
+      padding: 7px 10px;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border2);
+      background: var(--bg);
+      color: var(--text);
+      height: 36px;
+    }
+    .field input:focus, .field select:focus { outline: none; border-color: var(--info); }
+    .inline-form { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
+    .inline-form .field { margin-bottom: 0; }
+    .inline-form .field input[type=text],
+    .inline-form .field select { height: 32px; font-size: 13px; }
+    .check-row { display: flex; align-items: center; gap: 8px; height: 32px; }
+    .check-row input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--info); cursor: pointer; }
+    .check-row label { font-size: 13px; color: var(--text); cursor: pointer; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+    /* ---- WEEK NAV ---- */
+    .week-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+    .week-nav span.lbl { font-size: 12px; color: var(--text2); }
+    .week-nav span.range { font-size: 14px; font-weight: 600; color: var(--text); }
+
+    /* ---- TABLE ---- */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { font-weight: 500; font-size: 11px; color: var(--text2); text-align: left; padding: 6px 8px; border-bottom: 0.5px solid var(--border); white-space: nowrap; text-transform: uppercase; letter-spacing: .04em; }
+    td { padding: 6px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .subtotal td { font-weight: 600; background: var(--bg2); }
+    .cb-cell { text-align: center; }
+    .cb-cell input { width: 15px; height: 15px; cursor: pointer; accent-color: var(--info); }
+    .num-cell { text-align: center; font-weight: 600; }
+    .jatah-head { background: var(--info-bg); color: var(--info); text-align: center; font-size: 11px; }
+    .jatah-val { text-align: center; font-weight: 600; color: var(--info); }
+
+    /* ---- BADGES ---- */
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 500; }
+    .badge-tiger    { background: #dbeafe; color: #1e40af; }
+    .badge-yayasan  { background: #dcfce7; color: #166534; }
+    .badge-s1       { background: #fef9c3; color: #713f12; }
+    .badge-s2       { background: #ede9fe; color: #4c1d95; }
+    .badge-s3       { background: #fee2e2; color: #7f1d1d; }
+    .badge-asm      { background: #d1fae5; color: #064e3b; }
+    .badge-inj      { background: #ffedd5; color: #7c2d12; }
+
+    /* ---- METRIC CARDS ---- */
+    .metric-grid { display: grid; gap: 12px; margin-bottom: 1.5rem; }
+    .mc { background: var(--bg2); border-radius: var(--radius); padding: 1rem 1.25rem; }
+    .mc-lbl { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+    .mc-val { font-size: 36px; font-weight: 700; color: var(--text); line-height: 1; }
+    .mc-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+    /* ---- SECTION BLOCKS ---- */
+    .wc-block { margin-bottom: 1.75rem; }
+    .wc-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .divline { flex: 1; height: 0.5px; background: var(--border2); }
+    .sh-block { margin-bottom: 1.25rem; }
+    .shift-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; }
+    .shift-card-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg2); border-bottom: 0.5px solid var(--border); flex-wrap: wrap; gap: 8px; }
+    .shift-card-head-left { display: flex; align-items: center; gap: 8px; }
+    .shift-stats { display: flex; gap: 20px; }
+    .sstat { display: flex; flex-direction: column; align-items: center; }
+    .sstat-val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
+    .sstat-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+    /* ---- MISC ---- */
+    .empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; }
+    .help { font-size: 11px; color: var(--text3); margin-top: 8px; }
+    .slbl { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .75rem; }
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--bg3); color: var(--text);
+      padding: 10px 16px; border-radius: var(--radius);
+      font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+      opacity: 0; transition: opacity .3s;
+      pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+    .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 1rem; border: 0.5px solid; }
+    .alert-info { background: var(--info-bg); color: var(--info); border-color: var(--info); }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// CONFIG — Ganti dengan credentials Supabase project kamu
+// ============================================================
+const SUPABASE_URL  = 'https://yhyiljuplidjpzhapotk.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeWlsanVwbGlkanB6aGFwb3RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwOTkwNDAsImV4cCI6MjA5MDY3NTA0MH0.Y8viOJo3K_ptcPQ5el0HtK_JrptRTKymUaNqxOqzrS8';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  screen: 'loading',  // loading | home | loginMandor | loginSuper | app
+  role: null,         // null | operator | mandor | superadmin
+  user: null,
+  profile: null,
+  // mandor scope (from profile)
+  mandorWC: '',
+  mandorShift: 0,
+  mandorNama: '',
+  // tabs
+  mandorTab: 'hadir',
+  adminTab: 'karyawan',
+  // data cache
+  karyawan: [],
+  kehadiran: {},   // { karyawan_id: { week_start: [bool x6] } }
+  mandors: [],     // for superadmin user management
+  // week
+  week: getMonday(new Date()),
+  // form
+  form: { nama: '', tipe: 'Tiger', shift: '1', lokasi: 'Assembling', susu: true, kopi: false, mie: false },
+  mandorForm: { nama: '', email: '', password: '', workcenter: 'Assembling', shift: '1' },
+  loginForm: { email: '', password: '', err: '' },
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getMonday(d) {
+  const day = d.getDay(), diff = day === 0 ? -6 : 1 - day;
+  const m = new Date(d); m.setDate(d.getDate() + diff);
+  return m.toISOString().split('T')[0];
+}
+
+function addDays(wk, n) {
+  const d = new Date(wk + 'T00:00:00'); d.setDate(d.getDate() + n); return d;
+}
+
+function fmt(d) { return d.getDate() + '/' + (d.getMonth() + 1); }
+
+function fmtLong(d) {
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
+}
+
+function wcBadge(wc) { return wc === 'Assembling' ? 'asm' : 'inj'; }
+
+function showToast(msg, dur = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+function getHadir(karId) {
+  return state.kehadiran[karId]?.[state.week] || [false,false,false,false,false,false];
+}
+
+function groupKar(lokasi, shift) {
+  return state.karyawan.filter(k => k.lokasi === lokasi && k.shift === shift);
+}
+
+function calcG(lokasi, shift) {
+  const list = groupKar(lokasi, shift);
+  let susu = 0, kopi = 0, mie = 0;
+  list.forEach(k => {
+    const h = getHadir(k.id), n = h.filter(Boolean).length;
+    if (k.dapat_susu) susu += n;
+    if (k.dapat_kopi) kopi += n;
+    if (k.dapat_mie)  mie  += n;
+  });
+  const hasKopi = list.some(k => k.dapat_kopi);
+  const hasMie  = list.some(k => k.dapat_mie);
+  return { susu, kopi, mie, list, hasKopi, hasMie };
+}
+
+// ---- Rekap rows grouped by Tiger / Yayasan ----
+function buildRekapRows(list, hasKopi, hasMie) {
+  const colCount = 4 + (hasKopi?1:0) + (hasMie?1:0);
+  let html = '';
+  ['Tiger','Yayasan'].forEach(tipe => {
+    const grp = list.filter(k => k.tipe === tipe);
+    if (!grp.length) return;
+    let sub = { susu:0, kopi:0, mie:0 };
+    let rowsHtml = '';
+    grp.forEach(k => {
+      const h = getHadir(k.id), n = h.filter(Boolean).length;
+      if (k.dapat_susu) sub.susu += n;
+      if (k.dapat_kopi) sub.kopi += n;
+      if (k.dapat_mie)  sub.mie  += n;
+      rowsHtml += `<tr>
+        <td>${k.nama}</td>
+        <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
+        <td>${n} hari</td>
+        <td>${k.dapat_susu ? n : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
+        ${hasKopi ? `<td class="jatah-val">${k.dapat_kopi ? n : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+        ${hasMie  ? `<td class="jatah-val">${k.dapat_mie  ? n : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+      </tr>`;
+    });
+    html += `<tr style="background:var(--bg2)"><td colspan="${colCount}" style="padding:5px 8px;border-top:0.5px solid var(--border2)">
+      <span class="badge badge-${tipe.toLowerCase()}" style="font-size:10px">${tipe}</span>
+      <span style="color:var(--text3);font-size:10px;margin-left:4px">${grp.length} org</span>
+    </td></tr>`;
+    html += rowsHtml;
+    html += `<tr style="background:var(--bg2)">
+      <td colspan="3" style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text2)">Subtotal ${tipe}</td>
+      <td style="text-align:center;font-weight:600">${sub.susu}</td>
+      ${hasKopi ? `<td style="text-align:center;font-weight:600">${sub.kopi}</td>` : ''}
+      ${hasMie  ? `<td style="text-align:center;font-weight:600">${sub.mie}</td>`  : ''}
+    </tr>`;
+  });
+  return html;
+}
+
+// ============================================================
+// SUPABASE DATA LAYER
+// ============================================================
+async function loadKaryawan() {
+  const { data, error } = await sb.from('karyawan').select('*').order('nama');
+  if (error) { console.error(error); return; }
+  state.karyawan = data || [];
+}
+
+async function loadKehadiran() {
+  // Load kehadiran for current week and 4 weeks back
+  const pastDate = new Date(state.week + 'T00:00:00');
+  pastDate.setDate(pastDate.getDate() - 28);
+  const pastStr = pastDate.toISOString().split('T')[0];
+
+  const { data, error } = await sb
+    .from('kehadiran')
+    .select('*')
+    .gte('week_start', pastStr);
+  if (error) { console.error(error); return; }
+
+  state.kehadiran = {};
+  (data || []).forEach(row => {
+    if (!state.kehadiran[row.karyawan_id]) state.kehadiran[row.karyawan_id] = {};
+    if (!state.kehadiran[row.karyawan_id][row.week_start]) {
+      state.kehadiran[row.karyawan_id][row.week_start] = [false,false,false,false,false,false];
+    }
+    state.kehadiran[row.karyawan_id][row.week_start][row.hari] = row.hadir;
+  });
+}
+
+async function loadMandors() {
+  const { data, error } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('role', 'mandor')
+    .order('nama');
+  if (error) { console.error(error); return; }
+  state.mandors = data || [];
+}
+
+async function saveHadir(karId, hari, hadir) {
+  const { error } = await sb.from('kehadiran').upsert({
+    karyawan_id: karId,
+    week_start: state.week,
+    hari: hari,
+    hadir: hadir,
+    updated_by: state.user?.id || null,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'karyawan_id,week_start,hari' });
+  if (error) console.error('saveHadir:', error);
+}
+
+async function addKaryawanDB(data) {
+  const { error } = await sb.from('karyawan').insert({
+    nama: data.nama, tipe: data.tipe,
+    shift: parseInt(data.shift), lokasi: data.lokasi,
+    dapat_susu: data.susu,
+    dapat_kopi: data.kopi || false,
+    dapat_mie:  data.mie  || false,
+    created_by: state.user?.id || null
+  });
+  if (error) { showToast('Gagal menambah karyawan'); console.error(error); return false; }
+  showToast('Karyawan berhasil ditambahkan');
+  await loadKaryawan();
+  return true;
+}
+
+async function deleteKaryawanDB(id) {
+  const { error } = await sb.from('karyawan').delete().eq('id', id);
+  if (error) { showToast('Gagal menghapus'); console.error(error); return; }
+  showToast('Karyawan dihapus');
+  await loadKaryawan();
+  render();
+}
+
+// ============================================================
+// AUTH
+// ============================================================
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await afterLogin(session.user);
+  } else {
+    state.screen = 'home';
+    // Load data for operator (anon) — parallel
+    await Promise.all([loadKaryawan(), loadKehadiran()]);
+    render();
+  }
+}
+
+async function afterLogin(user) {
+  state.user = user;
+  const { data: profile, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if (error || !profile) {
+    showToast('Profil tidak ditemukan, hubungi superadmin');
+    await sb.auth.signOut();
+    state.screen = 'home'; render(); return;
+  }
+  state.profile = profile;
+  state.role = profile.role;
+  if (profile.role === 'mandor') {
+    state.mandorWC = profile.workcenter;
+    state.mandorShift = profile.shift;
+    state.mandorNama = profile.nama;
+    state.mandorTab = 'hadir';
+  } else {
+    state.adminTab = 'karyawan';
+  }
+  const tasks = [loadKaryawan(), loadKehadiran()];
+  if (profile.role === 'superadmin') tasks.push(loadMandors());
+  await Promise.all(tasks);
+  state.screen = 'app';
+  render();
+}
+
+async function doLoginMandor() {
+  const username = document.getElementById('l-username').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if (!username || !pass) { setLoginErr('Username dan password wajib diisi'); return; }
+  setLoginErr('');
+  const loginBtn = document.getElementById('login-btn');
+  loginBtn.textContent = 'Masuk...'; loginBtn.disabled = true;
+  const email = toFakeEmail(username);
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    setLoginErr('Username atau password salah');
+    loginBtn.textContent = 'Masuk'; loginBtn.disabled = false;
+    return;
+  }
+  await afterLogin(data.user);
+}
+
+async function doLoginSuper() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if (!email || !pass) { setLoginErr('Email dan password wajib diisi'); return; }
+  setLoginErr('');
+  const loginBtn = document.getElementById('login-btn');
+  loginBtn.textContent = 'Masuk...'; loginBtn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    setLoginErr('Email atau password salah');
+    loginBtn.textContent = 'Masuk'; loginBtn.disabled = false;
+    return;
+  }
+  await afterLogin(data.user);
+}
+
+async function doLogout() {
+  state.screen = 'home'; state.role = null; state.user = null; state.profile = null;
+  render();
+  await sb.auth.signOut();
+}
+
+function setLoginErr(msg) {
+  const el = document.getElementById('login-err');
+  if (el) el.textContent = msg;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  document.getElementById('app').innerHTML = buildApp();
+  attachEvents();
+}
+
+function buildApp() {
+  if (state.screen === 'loading') return buildLoading();
+  if (state.screen === 'home') return buildHome();
+  if (state.screen === 'loginMandor') return buildLoginMandorScreen();
+  if (state.screen === 'loginSuper')  return buildLoginSuperScreen();
+  if (state.role === 'operator') return buildOperatorDashboard();
+  if (state.role === 'mandor') return buildMandor();
+  if (state.role === 'superadmin') return buildSuperAdmin();
+  return buildHome();
+}
+
+function buildLoading() {
+  return `<div class="loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text2)">Memuat...</span></div>`;
+}
+
+// ---- HOME ----
+function buildHome() {
+  return `
+    <div class="home-hero">
+      <h1>Jatah Karyawan</h1>
+      <p>PT. Tigermandiri Pratama</p>
+    </div>
+    <div class="role-grid">
+      <div class="role-card" onclick="goOperator()">
+        <div class="role-icon">📋</div>
+        <div class="role-title">Lihat Rekap</div>
+        <div class="role-desc">Dashboard jatah minggu ini. Tidak perlu login.</div>
+      </div>
+      <div class="role-card" onclick="goLoginMandor()">
+        <div class="role-icon">✏️</div>
+        <div class="role-title">Masuk sebagai Mandor</div>
+        <div class="role-desc">Input hadir dan kelola karyawan grup kamu.</div>
+      </div>
+    </div>
+    <div class="sa-link"><button onclick="goLoginSuper()">Superadmin</button></div>`;
+}
+
+// ---- LOGIN SCREEN ----
+// Mandor: username + password
+function buildLoginMandorScreen() {
+  return `
+    <div class="login-wrap"><div class="login-card">
+      <h2>Masuk sebagai Mandor</h2>
+      <p class="sub">Data yang tampil hanya grup kamu</p>
+      <div class="field"><label>Username</label>
+        <input type="text" id="l-username" placeholder="Contoh: yani" autocomplete="username" autocapitalize="none">
+      </div>
+      <div class="field"><label>Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="err-msg" id="login-err"></div>
+      <button class="btn btn-block" id="login-btn" onclick="doLoginMandor()">Masuk</button>
+      <div class="back-link"><button onclick="goHome()">← Kembali</button></div>
+    </div></div>`;
+}
+
+// Superadmin: email + password
+function buildLoginSuperScreen() {
+  return `
+    <div class="login-wrap"><div class="login-card">
+      <h2>Superadmin</h2>
+      <p class="sub">Akses penuh ke semua data</p>
+      <div class="field"><label>Email</label>
+        <input type="email" id="l-email" placeholder="email@tigermandiri.com" autocomplete="email">
+      </div>
+      <div class="field"><label>Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="err-msg" id="login-err"></div>
+      <button class="btn btn-block" id="login-btn" onclick="doLoginSuper()">Masuk</button>
+      <div class="back-link"><button onclick="goHome()">← Kembali</button></div>
+    </div></div>`;
+}
+
+function toFakeEmail(username) {
+  return username.toLowerCase().replace(/[^a-z0-9]/g, '') + '@example.com';
+}
+
+// ---- WEEK NAV ----
+function weekNavHTML() {
+  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
+  return `
+    <div class="week-nav">
+      <span class="lbl">Periode:</span>
+      <button class="btn btn-sm" onclick="shiftWeek(-7)">←</button>
+      <span class="range">${fmtLong(days[0])} – ${fmtLong(days[5])}</span>
+      <button class="btn btn-sm" onclick="shiftWeek(7)">→</button>
+    </div>`;
+}
+
+// ---- OPERATOR DASHBOARD ----
+function buildOperatorDashboard() {
+  let html = `
+    <div class="topbar">
+      <span class="topbar-title">Dashboard Rekap Jatah</span>
+      <button class="btn btn-sm btn-primary" onclick="downloadCSV()">↓ CSV</button>
+      <button class="btn btn-sm" onclick="goHome()">← Kembali</button>
+    </div>
+    ${weekNavHTML()}`;
+
+  ['Assembling', 'Injection'].forEach(wc => {
+    html += `<div class="wc-block"><div class="wc-title">
+      <span class="badge badge-${wcBadge(wc)}">${wc}</span>
+      <div class="divline"></div></div>`;
+    [1,2,3].forEach(sh => {
+      const g = calcG(wc, sh);
+      if (!g.list.length) return;
+      html += `<div class="shift-card">
+        <div class="shift-card-head">
+          <div class="shift-card-head-left">
+            <span class="badge badge-s${sh}">Shift ${sh}</span>
+            <span style="font-size:12px;color:var(--text2)">${g.list.length} karyawan</span>
+          </div>
+          <div class="shift-stats">
+            <div class="sstat"><div class="sstat-val">${g.susu}</div><div class="sstat-lbl">Susu</div></div>
+            ${g.hasKopi ? `<div class="sstat"><div class="sstat-val">${g.kopi}</div><div class="sstat-lbl">Kopi</div></div>` : ''}
+            ${g.hasMie  ? `<div class="sstat"><div class="sstat-val">${g.mie}</div><div class="sstat-lbl">Mie</div></div>`  : ''}
+          </div>
+        </div>
+        <div class="table-wrap">
+        <table><thead><tr>
+          <th>Nama</th><th>Tipe</th><th>Hadir</th><th>Susu</th>
+          ${g.hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+          ${g.hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+        </tr></thead><tbody>`;
+      html += buildRekapRows(g.list, g.hasKopi, g.hasMie);
+      html += `<tr class="subtotal"><td colspan="3">Total</td><td>${g.susu}</td>
+        ${g.hasKopi ? `<td>${g.kopi}</td>` : ''}
+        ${g.hasMie  ? `<td>${g.mie}</td>`  : ''}
+        </tr></tbody></table></div></div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+
+// ---- MANDOR ----
+function buildMandor() {
+  const wc = state.mandorWC, sh = state.mandorShift;
+  return `
+    <div class="topbar">
+      <span class="topbar-title">${state.mandorNama}</span>
+      <span style="display:flex;gap:6px;align-items:center">
+        <span class="badge badge-${wcBadge(wc)}" style="font-size:10px">${wc}</span>
+        <span class="badge badge-s${sh}" style="font-size:10px">Shift ${sh}</span>
+      </span>
+      <button class="btn btn-sm ${state.mandorTab==='hadir'?'active':''}" onclick="setMandorTab('hadir')">Input Hadir</button>
+      <button class="btn btn-sm ${state.mandorTab==='karyawan'?'active':''}" onclick="setMandorTab('karyawan')">Karyawan</button>
+      <button class="btn btn-sm ${state.mandorTab==='rekap'?'active':''}" onclick="setMandorTab('rekap')">Rekap</button>
+      <button class="btn btn-sm" onclick="doLogout()" style="color:var(--text2)">Keluar</button>
+    </div>
+    ${state.mandorTab === 'hadir' ? buildMandorHadir(wc, sh) :
+      state.mandorTab === 'karyawan' ? buildMandorKaryawan(wc, sh) :
+      buildMandorRekap(wc, sh)}`;
+}
+
+function buildMandorHadir(wc, sh) {
+  const list = groupKar(wc, sh);
+  if (!list.length) return weekNavHTML() + `<div class="empty">Belum ada karyawan. Tambah dulu di tab Karyawan.</div>`;
+  const hasKopi = list.some(k => k.dapat_kopi);
+  const hasMie  = list.some(k => k.dapat_mie);
+  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
+  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab'];
+  const hdrs = dayNames.map((d,i) => `<th class="cb-cell">${d}<br><span style="font-size:10px;font-weight:400;color:var(--text3)">${fmt(days[i])}</span></th>`).join('');
+  let html = weekNavHTML() + `<div class="table-wrap"><table><thead><tr>
+    <th>Nama</th><th>Tipe</th><th>Susu</th>${hdrs}
+    <th class="num-cell">Hadir</th>
+    ${hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+    ${hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+  </tr></thead><tbody>`;
+  list.forEach(k => {
+    const h = getHadir(k.id), tot = h.filter(Boolean).length;
+    html += `<tr>
+      <td>${k.nama}</td>
+      <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
+      <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:11px">Ya</span>' : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
+      ${h.map((v,di) => `<td class="cb-cell"><input type="checkbox" ${v?'checked':''} data-kid="${k.id}" data-day="${di}"></td>`).join('')}
+      <td class="num-cell" id="tot-${k.id}">${tot}</td>
+      ${hasKopi ? `<td class="jatah-val" id="kopi-${k.id}">${k.dapat_kopi ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+      ${hasMie  ? `<td class="jatah-val" id="mie-${k.id}">${k.dapat_mie   ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+    </tr>`;
+  });
+  html += `</tbody></table></div>
+  <div class="help">Centang hari karyawan hadir. Jatah dihitung otomatis.</div>`;
+  return html;
+}
+
+function buildMandorKaryawan(wc, sh) {
+  const list = groupKar(wc, sh), f = state.form;
+  const rows = !list.length
+    ? `<tr><td colspan="7"><div class="empty">Belum ada karyawan</div></td></tr>`
+    : list.map((k,i) => `<tr>
+        <td style="color:var(--text3)">${i+1}</td>
+        <td>${k.nama}</td>
+        <td><span class="badge badge-${k.tipe.toLowerCase()}">${k.tipe}</span></td>
+        <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+        <td>${k.dapat_kopi ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+        <td>${k.dapat_mie  ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+        <td><button class="btn btn-danger" onclick="deleteKaryawanDB('${k.id}')">Hapus</button></td>
+      </tr>`).join('');
+  return `
+    <div class="inline-form">
+      <div class="field"><label>Nama</label><input type="text" id="f-nama" value="${f.nama}" placeholder="Nama karyawan" style="width:140px"></div>
+      <div class="field"><label>Tipe</label><select id="f-tipe">
+        <option ${f.tipe==='Tiger'?'selected':''}>Tiger</option>
+        <option ${f.tipe==='Yayasan'?'selected':''}>Yayasan</option>
+      </select></div>
+      <div class="field"><label>Susu</label>
+        <div class="check-row"><input type="checkbox" id="f-susu" ${f.susu?'checked':''}><label for="f-susu">Ya</label></div>
+      </div>
+      <div class="field"><label>Kopi</label>
+        <div class="check-row"><input type="checkbox" id="f-kopi" ${f.kopi?'checked':''}><label for="f-kopi">Ya</label></div>
+      </div>
+      <div class="field"><label>Mie</label>
+        <div class="check-row"><input type="checkbox" id="f-mie" ${f.mie?'checked':''}><label for="f-mie">Ya</label></div>
+      </div>
+      <button class="btn btn-primary" onclick="addKarMandor()">+ Tambah</button>
+    </div>
+    <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Nama</th><th>Tipe</th><th>Susu</th><th>Kopi</th><th>Mie</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <div class="help">Karyawan otomatis masuk ke ${wc} Shift ${sh}.</div>`;
+}
+
+function buildMandorRekap(wc, sh) {
+  const g = calcG(wc, sh);
+  const colCount = 1 + (g.hasKopi?1:0) + (g.hasMie?1:0);
+  const cols = colCount === 3 ? 'repeat(3,minmax(0,1fr))' : colCount === 2 ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)';
+  let html = weekNavHTML()
+    + `<div style="margin-bottom:1rem;display:flex;justify-content:flex-end"><button class="btn btn-sm btn-primary" onclick="downloadCSV()">↓ CSV</button></div>`
+    + `<div class="metric-grid" style="grid-template-columns:${cols}">
+    <div class="mc"><div class="mc-lbl">Susu</div><div class="mc-val">${g.susu}</div>
+      <div class="mc-sub">${g.list.filter(k=>k.dapat_susu).length} eligible</div></div>
+    ${g.hasKopi ? `<div class="mc"><div class="mc-lbl">Kopi</div><div class="mc-val">${g.kopi}</div><div class="mc-sub">${g.list.filter(k=>k.dapat_kopi).length} eligible</div></div>` : ''}
+    ${g.hasMie  ? `<div class="mc"><div class="mc-lbl">Mie</div><div class="mc-val">${g.mie}</div><div class="mc-sub">${g.list.filter(k=>k.dapat_mie).length} eligible</div></div>`   : ''}
+  </div><div class="slbl">Detail karyawan</div>`;
+  if (!g.list.length) return html + `<div class="empty">Belum ada karyawan</div>`;
+  html += `<div class="table-wrap"><table><thead><tr>
+    <th>Nama</th><th>Tipe</th><th>Hadir</th><th>Susu</th>
+    ${g.hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+    ${g.hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+  </tr></thead><tbody>`;
+  html += buildRekapRows(g.list, g.hasKopi, g.hasMie);
+  html += `<tr class="subtotal"><td colspan="3">Total</td><td>${g.susu}</td>
+    ${g.hasKopi ? `<td>${g.kopi}</td>` : ''}
+    ${g.hasMie  ? `<td>${g.mie}</td>`  : ''}
+    </tr></tbody></table></div>`;
+  return html;
+}
+
+// ---- SUPERADMIN ----
+function buildSuperAdmin() {
+  return `
+    <div class="topbar">
+      <span class="topbar-title">Superadmin</span>
+      <button class="btn btn-sm ${state.adminTab==='karyawan'?'active':''}" onclick="setAdminTab('karyawan')">Master Karyawan</button>
+      <button class="btn btn-sm ${state.adminTab==='mingguan'?'active':''}" onclick="setAdminTab('mingguan')">Input Mingguan</button>
+      <button class="btn btn-sm ${state.adminTab==='rekap'?'active':''}" onclick="setAdminTab('rekap')">Rekap Semua</button>
+      <button class="btn btn-sm ${state.adminTab==='mandors'?'active':''}" onclick="setAdminTab('mandors')">Akun Mandor</button>
+      <button class="btn btn-sm" onclick="doLogout()" style="color:var(--text2)">Keluar</button>
+    </div>
+    ${state.adminTab === 'karyawan' ? buildMasterAll() :
+      state.adminTab === 'mingguan' ? buildMingguanAll() :
+      state.adminTab === 'rekap'    ? buildRekapAll() :
+      buildManageAccounts()}`;
+}
+
+function buildMasterAll() {
+  const f = state.form;
+  const rows = !state.karyawan.length
+    ? `<tr><td colspan="10"><div class="empty">Belum ada karyawan</div></td></tr>`
+    : state.karyawan.map((k,i) => `<tr>
+        <td style="color:var(--text3)">${i+1}</td>
+        <td>${k.nama}</td>
+        <td><span class="badge badge-${k.tipe.toLowerCase()}">${k.tipe}</span></td>
+        <td><span class="badge badge-s${k.shift}">Shift ${k.shift}</span></td>
+        <td><span class="badge badge-${wcBadge(k.lokasi)}">${k.lokasi}</span></td>
+        <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+        <td>${k.dapat_kopi ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+        <td>${k.dapat_mie  ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+        <td><button class="btn btn-danger" onclick="deleteKaryawanDB('${k.id}')">Hapus</button></td>
+      </tr>`).join('');
+
+  return `
+    <div class="inline-form">
+      <div class="field"><label>Nama</label><input type="text" id="f-nama" value="${f.nama}" placeholder="Nama karyawan" style="width:130px"></div>
+      <div class="field"><label>Tipe</label><select id="f-tipe">
+        <option ${f.tipe==='Tiger'?'selected':''}>Tiger</option>
+        <option ${f.tipe==='Yayasan'?'selected':''}>Yayasan</option>
+      </select></div>
+      <div class="field"><label>Shift</label><select id="f-shift">
+        <option value="1" ${f.shift==='1'?'selected':''}>Shift 1</option>
+        <option value="2" ${f.shift==='2'?'selected':''}>Shift 2</option>
+        <option value="3" ${f.shift==='3'?'selected':''}>Shift 3</option>
+      </select></div>
+      <div class="field"><label>Lokasi</label><select id="f-lokasi">
+        <option ${f.lokasi==='Assembling'?'selected':''}>Assembling</option>
+        <option ${f.lokasi==='Injection'?'selected':''}>Injection</option>
+      </select></div>
+      <div class="field"><label>Susu</label>
+        <div class="check-row"><input type="checkbox" id="f-susu" ${f.susu?'checked':''}><label for="f-susu">Ya</label></div>
+      </div>
+      <div class="field"><label>Kopi</label>
+        <div class="check-row"><input type="checkbox" id="f-kopi" ${f.kopi?'checked':''}><label for="f-kopi">Ya</label></div>
+      </div>
+      <div class="field"><label>Mie</label>
+        <div class="check-row"><input type="checkbox" id="f-mie" ${f.mie?'checked':''}><label for="f-mie">Ya</label></div>
+      </div>
+      <button class="btn btn-primary" onclick="addKar()">+ Tambah</button>
+    </div>
+    <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Nama</th><th>Tipe</th><th>Shift</th><th>Lokasi</th><th>Susu</th><th>Kopi</th><th>Mie</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <div class="help">${state.karyawan.length} karyawan terdaftar.</div>`;
+}
+
+function buildMingguanAll() {
+  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
+  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab'];
+  const hdrs = dayNames.map((d,i) => `<th class="cb-cell">${d}<br><span style="font-size:10px;font-weight:400;color:var(--text3)">${fmt(days[i])}</span></th>`).join('');
+
+  let html = weekNavHTML();
+  ['Assembling','Injection'].forEach(wc => {
+    html += `<div class="wc-block"><div class="wc-title"><span class="badge badge-${wcBadge(wc)}">${wc}</span><div class="divline"></div></div>`;
+    [1,2,3].forEach(sh => {
+      const list = groupKar(wc, sh);
+      if (!list.length) return;
+      const hasKopi = list.some(k => k.dapat_kopi);
+      const hasMie  = list.some(k => k.dapat_mie);
+      html += `<div class="sh-block"><div style="margin-bottom:6px"><span class="badge badge-s${sh}" style="font-size:10px">Shift ${sh}</span></div>
+        <div class="table-wrap"><table><thead><tr>
+          <th>Nama</th><th>Tipe</th><th>Susu</th>${hdrs}
+          <th class="num-cell">Hadir</th>
+          ${hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+          ${hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+        </tr></thead><tbody>`;
+      list.forEach(k => {
+        const h = getHadir(k.id), tot = h.filter(Boolean).length;
+        html += `<tr>
+          <td>${k.nama}</td>
+          <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
+          <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:11px">Ya</span>' : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
+          ${h.map((v,di) => `<td class="cb-cell"><input type="checkbox" ${v?'checked':''} data-kid="${k.id}" data-day="${di}"></td>`).join('')}
+          <td class="num-cell" id="tot-${k.id}">${tot}</td>
+          ${hasKopi ? `<td class="jatah-val" id="kopi-${k.id}">${k.dapat_kopi ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+          ${hasMie  ? `<td class="jatah-val" id="mie-${k.id}">${k.dapat_mie  ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+        </tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+
+function buildRekapAll() {
+  let html = weekNavHTML() + `<div style="margin-bottom:1rem;display:flex;justify-content:flex-end"><button class="btn btn-sm btn-primary" onclick="downloadCSV()">↓ CSV</button></div>`;
+  ['Assembling','Injection'].forEach(wc => {
+    html += `<div class="wc-block"><div class="wc-title"><span class="badge badge-${wcBadge(wc)}">${wc}</span><div class="divline"></div></div>`;
+    [1,2,3].forEach(sh => {
+      const g = calcG(wc, sh);
+      if (!g.list.length) return;
+      html += `<div class="shift-card">
+        <div class="shift-card-head">
+          <div class="shift-card-head-left">
+            <span class="badge badge-s${sh}">Shift ${sh}</span>
+            <span style="font-size:12px;color:var(--text2)">${g.list.length} karyawan</span>
+          </div>
+          <div class="shift-stats">
+            <div class="sstat"><div class="sstat-val">${g.susu}</div><div class="sstat-lbl">Susu</div></div>
+            ${g.hasKopi ? `<div class="sstat"><div class="sstat-val">${g.kopi}</div><div class="sstat-lbl">Kopi</div></div>` : ''}
+            ${g.hasMie  ? `<div class="sstat"><div class="sstat-val">${g.mie}</div><div class="sstat-lbl">Mie</div></div>`  : ''}
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr>
+          <th>Nama</th><th>Tipe</th><th>Hadir</th><th>Susu</th>
+          ${g.hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+          ${g.hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+        </tr></thead><tbody>`;
+      html += buildRekapRows(g.list, g.hasKopi, g.hasMie);
+      html += `<tr class="subtotal"><td colspan="3">Total</td><td>${g.susu}</td>
+        ${g.hasKopi ? `<td>${g.kopi}</td>` : ''}
+        ${g.hasMie  ? `<td>${g.mie}</td>`  : ''}
+        </tr></tbody></table></div></div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+
+function buildManageAccounts() {
+  const mf = state.mandorForm;
+  const rows = !state.mandors.length
+    ? `<tr><td colspan="5"><div class="empty">Belum ada akun mandor</div></td></tr>`
+    : state.mandors.map((m,i) => `<tr>
+        <td style="color:var(--text3)">${i+1}</td>
+        <td>${m.nama}</td>
+        <td style="color:var(--text2);font-size:12px">${m.username || '-'}</td>
+        <td><span class="badge badge-${wcBadge(m.workcenter)}" style="font-size:10px">${m.workcenter}</span></td>
+        <td><span class="badge badge-s${m.shift}" style="font-size:10px">Shift ${m.shift}</span></td>
+        <td><button class="btn btn-danger" onclick="deleteMandor('${m.id}')">Hapus</button></td>
+      </tr>`).join('');
+
+  return `
+    <div class="slbl">Buat Akun Mandor Baru</div>
+    <div class="inline-form" style="margin-bottom:1.5rem">
+      <div class="field"><label>Nama Mandor</label><input type="text" id="m-nama" value="${mf.nama}" placeholder="Nama lengkap" style="width:140px"></div>
+      <div class="field"><label>Username</label><input type="text" id="m-username" value="${mf.username||''}" placeholder="Contoh: yani" style="width:120px" autocapitalize="none"></div>
+      <div class="field"><label>Password</label><input type="password" id="m-pass" placeholder="Min 6 karakter" style="width:130px"></div>
+      <div class="field"><label>Workcenter</label><select id="m-wc">
+        <option ${mf.workcenter==='Assembling'?'selected':''}>Assembling</option>
+        <option ${mf.workcenter==='Injection'?'selected':''}>Injection</option>
+      </select></div>
+      <div class="field"><label>Shift</label><select id="m-shift">
+        <option value="1" ${mf.shift==='1'?'selected':''}>Shift 1</option>
+        <option value="2" ${mf.shift==='2'?'selected':''}>Shift 2</option>
+        <option value="3" ${mf.shift==='3'?'selected':''}>Shift 3</option>
+      </select></div>
+      <button class="btn btn-primary" id="btn-buat-mandor" onclick="buatAkunMandor()">+ Buat Akun</button>
+    </div>
+    <div class="err-msg" id="mandor-err" style="margin-bottom:1rem"></div>
+    <div class="slbl">Daftar Akun Mandor</div>
+    <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Workcenter</th><th>Shift</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+function attachEvents() {
+  // Checkbox hadir
+  document.querySelectorAll('input[data-kid]').forEach(cb => {
+    cb.addEventListener('change', async function() {
+      const kid = cb.dataset.kid, day = parseInt(cb.dataset.day);
+      if (!state.kehadiran[kid]) state.kehadiran[kid] = {};
+      if (!state.kehadiran[kid][state.week])
+        state.kehadiran[kid][state.week] = [false,false,false,false,false,false];
+      state.kehadiran[kid][state.week][day] = cb.checked;
+
+      // Update totals inline
+      const n = state.kehadiran[kid][state.week].filter(Boolean).length;
+      const totEl  = document.getElementById('tot-'  + kid);
+      const kopiEl = document.getElementById('kopi-' + kid);
+      const mieEl  = document.getElementById('mie-'  + kid);
+      const kar    = state.karyawan.find(k => k.id === kid);
+      if (totEl)  totEl.textContent  = n;
+      if (kopiEl) kopiEl.textContent = (kar && kar.dapat_kopi) ? n : '-';
+      if (mieEl)  mieEl.textContent  = (kar && kar.dapat_mie)  ? n : '-';
+
+      // Save to Supabase (non-blocking)
+      await saveHadir(kid, day, cb.checked);
+    });
+  });
+
+  // Enter key on login
+  document.querySelectorAll('#l-username, #l-email, #l-pass').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      if (document.getElementById('l-username')) doLoginMandor();
+      else doLoginSuper();
+    });
+  });
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function goOperator() { state.role = 'operator'; state.screen = 'app'; render(); }
+function goLoginMandor() { state.screen = 'loginMandor'; render(); }
+function goLoginSuper() { state.screen = 'loginSuper'; render(); }
+function goHome() { state.role = null; state.screen = 'home'; render(); }
+function setMandorTab(t) { state.mandorTab = t; render(); }
+function setAdminTab(t) { state.adminTab = t; render(); }
+function shiftWeek(n) {
+  const d = new Date(state.week + 'T00:00:00'); d.setDate(d.getDate() + n);
+  state.week = d.toISOString().split('T')[0]; render();
+}
+
+async function addKar() {
+  const nama = document.getElementById('f-nama').value.trim();
+  if (!nama) return;
+  const ok = await addKaryawanDB({
+    nama, tipe: document.getElementById('f-tipe').value,
+    shift: document.getElementById('f-shift').value,
+    lokasi: document.getElementById('f-lokasi').value,
+    susu: document.getElementById('f-susu').checked,
+    kopi: document.getElementById('f-kopi').checked,
+    mie:  document.getElementById('f-mie').checked,
+  });
+  if (ok) render();
+}
+
+async function addKarMandor() {
+  const nama = document.getElementById('f-nama').value.trim();
+  if (!nama) return;
+  const ok = await addKaryawanDB({
+    nama, tipe: document.getElementById('f-tipe').value,
+    shift: String(state.mandorShift),
+    lokasi: state.mandorWC,
+    susu: document.getElementById('f-susu').checked,
+    kopi: document.getElementById('f-kopi').checked,
+    mie:  document.getElementById('f-mie').checked,
+  });
+  if (ok) render();
+}
+
+async function buatAkunMandor() {
+  const nama     = document.getElementById('m-nama').value.trim();
+  const username = document.getElementById('m-username').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  const pass     = document.getElementById('m-pass').value;
+  const wc       = document.getElementById('m-wc').value;
+  const shift    = parseInt(document.getElementById('m-shift').value);
+  const errEl    = document.getElementById('mandor-err');
+  const btn      = document.getElementById('btn-buat-mandor');
+
+  if (!nama || !username || !pass) { errEl.textContent = 'Nama, username, dan password wajib diisi'; return; }
+  if (pass.length < 6) { errEl.textContent = 'Password minimal 6 karakter'; return; }
+
+  errEl.textContent = '';
+  btn.textContent = 'Membuat...'; btn.disabled = true;
+
+  // Konversi username ke fake email untuk Supabase Auth
+  const fakeEmail = toFakeEmail(username);
+
+  // Buat auth user via client terpisah dengan persistSession: false
+  // agar session superadmin di localStorage tidak ketimpa
+  const sbTemp = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+  const { data: signUpData, error: signUpErr } = await sbTemp.auth.signUp({ email: fakeEmail, password: pass });
+  if (signUpErr) {
+    errEl.textContent = 'Gagal buat akun: ' + signUpErr.message;
+    btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+  }
+
+  const uid = signUpData.user?.id;
+  if (!uid) {
+    errEl.textContent = 'User ID tidak ditemukan, coba lagi';
+    btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+  }
+
+  // Simpan profil mandor + username (pakai sb utama yg masih punya session superadmin)
+  const { error: profErr } = await sb.from('profiles').upsert({
+    id: uid, nama, username, role: 'mandor', workcenter: wc, shift
+  });
+  if (profErr) {
+    errEl.textContent = 'Akun dibuat tapi profil gagal: ' + profErr.message;
+    btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+  }
+
+  showToast(`Akun mandor "${nama}" (${username}) berhasil dibuat!`);
+  state.mandorForm = { nama: '', username: '', password: '', workcenter: 'Assembling', shift: '1' };
+  btn.textContent = '+ Buat Akun'; btn.disabled = false;
+  await loadMandors();
+  render();
+}
+
+async function deleteMandor(id) {
+  if (!confirm('Hapus akun mandor ini?')) return;
+  const { error } = await sb.from('profiles').delete().eq('id', id);
+  if (error) { showToast('Gagal hapus: ' + error.message); return; }
+  showToast('Akun mandor dihapus');
+  await loadMandors();
+  render();
+}
+
+function downloadCSV() {
+  let list = [...state.karyawan];
+  let filename = `rekap-jatah-${state.week}`;
+  if (state.role === 'mandor') {
+    list = list.filter(k => k.lokasi === state.mandorWC && k.shift === state.mandorShift);
+    filename = `rekap-${state.mandorWC}-shift${state.mandorShift}-${state.week}`;
+  }
+  list.sort((a,b) => {
+    if (a.lokasi !== b.lokasi) return a.lokasi.localeCompare(b.lokasi);
+    if (a.shift  !== b.shift)  return a.shift - b.shift;
+    if (a.tipe   !== b.tipe)   return a.tipe.localeCompare(b.tipe);
+    return a.nama.localeCompare(b.nama);
+  });
+  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
+  const dayLabels = ['Sen','Sel','Rab','Kam','Jum','Sab'].map((d,i) => d + ' ' + fmt(days[i]));
+  const headers = ['Nama','Tipe','Shift','Lokasi',...dayLabels,'Total Hadir','Jatah Susu','Jatah Kopi','Jatah Mie'];
+  const rows = list.map(k => {
+    const h = getHadir(k.id), n = h.filter(Boolean).length;
+    return [
+      k.nama, k.tipe, `Shift ${k.shift}`, k.lokasi,
+      ...h.map(v => v ? '1' : '0'),
+      n,
+      k.dapat_susu ? n : 0,
+      k.dapat_kopi ? n : 0,
+      k.dapat_mie  ? n : 0,
+    ];
+  });
+  const csv = '\uFEFF' + [headers, ...rows]
+    .map(row => row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
+    .join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename + '.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('CSV berhasil didownload');
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>

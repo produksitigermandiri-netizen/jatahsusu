@@ -101,14 +101,15 @@
       transition: background .15s;
     }
     .btn:hover { background: var(--bg2); }
-    .btn.active { background: var(--bg2); font-weight: 500; border-color: var(--border2); }
+    .btn.active { background: var(--info); color: #fff; border-color: var(--info); font-weight: 600; }
+    .btn.active:hover { background: var(--info); opacity: .9; }
     .btn-sm { height: 28px; font-size: 12px; padding: 0 10px; }
     .btn-primary { color: var(--info); border-color: var(--info); }
     .btn-primary:hover { background: var(--info-bg); }
     .btn-danger { color: var(--danger); border-color: var(--danger); font-size: 11px; height: 26px; padding: 0 10px; }
     .btn-danger:hover { opacity: .8; }
-    .btn-block { width: 100%; height: 38px; font-size: 14px; font-weight: 500; color: var(--info); border-color: var(--info); }
-    .btn-block:hover { background: var(--info-bg); }
+    .btn-block { width: 100%; height: 40px; font-size: 14px; font-weight: 600; color: #fff; background: var(--info); border-color: var(--info); border-radius: var(--radius); }
+    .btn-block:hover { opacity: .9; background: var(--info); }
 
     /* ---- HOME SCREEN ---- */
     .home-hero { margin-bottom: 2rem; }
@@ -121,9 +122,10 @@
       border-radius: var(--radius-lg);
       padding: 1.25rem;
       cursor: pointer;
-      transition: border-color .15s, background .15s;
+      transition: border-color .15s, background .15s, box-shadow .15s, transform .1s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
     }
-    .role-card:hover { border-color: var(--info); background: var(--bg2); }
+    .role-card:hover { border-color: var(--info); background: var(--bg2); box-shadow: 0 4px 16px rgba(0,0,0,.1); transform: translateY(-1px); }
     .role-icon { width: 38px; height: 38px; background: var(--bg2); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; margin-bottom: 10px; font-size: 18px; }
     .role-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
     .role-desc { font-size: 12px; color: var(--text2); }
@@ -202,23 +204,30 @@
 
     /* ---- METRIC CARDS ---- */
     .metric-grid { display: grid; gap: 12px; margin-bottom: 1.5rem; }
-    .mc { background: var(--bg2); border-radius: var(--radius); padding: 1rem 1.25rem; }
-    .mc-lbl { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
-    .mc-val { font-size: 36px; font-weight: 700; color: var(--text); line-height: 1; }
-    .mc-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+    .mc { background: var(--bg2); border-radius: var(--radius); padding: 1rem 1.25rem; border-top: 3px solid var(--info); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .mc-lbl { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; font-weight: 600; }
+    .mc-val { font-size: 40px; font-weight: 800; color: var(--info); line-height: 1; }
+    .mc-sub { font-size: 11px; color: var(--text3); margin-top: 6px; }
 
     /* ---- SECTION BLOCKS ---- */
     .wc-block { margin-bottom: 1.75rem; }
-    .wc-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .wc-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
     .divline { flex: 1; height: 0.5px; background: var(--border2); }
     .sh-block { margin-bottom: 1.25rem; }
-    .shift-card { border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; }
+    .shift-card { border: 0.5px solid var(--border); border-left-width: 3px; border-left-color: var(--border2); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .shift-card-1 { border-left-color: #3b82f6; }
+    .shift-card-2 { border-left-color: #8b5cf6; }
+    .shift-card-3 { border-left-color: #f59e0b; }
     .shift-card-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg2); border-bottom: 0.5px solid var(--border); flex-wrap: wrap; gap: 8px; }
     .shift-card-head-left { display: flex; align-items: center; gap: 8px; }
     .shift-stats { display: flex; gap: 20px; }
     .sstat { display: flex; flex-direction: column; align-items: center; }
-    .sstat-val { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1; }
-    .sstat-lbl { font-size: 10px; color: var(--text3); margin-top: 2px; }
+    .sstat-val { font-size: 22px; font-weight: 800; color: var(--info); line-height: 1; }
+    .sstat-lbl { font-size: 10px; color: var(--text3); margin-top: 3px; font-weight: 500; }
+
+    /* ---- TABLE HOVER ---- */
+    tbody tr:hover > td { background: var(--bg2); transition: background .1s; }
+    .subtotal:hover > td { background: var(--bg2) !important; }
 
     /* ---- MISC ---- */
     .empty { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; }
@@ -305,7 +314,7 @@ function showToast(msg, dur = 2500) {
 }
 
 function getHadir(karId) {
-  return state.kehadiran[karId]?.[state.week] || [false,false,false,false,false,false];
+  return state.kehadiran[karId]?.[state.week] || [false,false,false,false,false,false,false];
 }
 
 function groupKar(lokasi, shift) {
@@ -612,12 +621,12 @@ function toFakeEmail(username) {
 
 // ---- WEEK NAV ----
 function weekNavHTML() {
-  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
   return `
     <div class="week-nav">
       <span class="lbl">Periode:</span>
       <button class="btn btn-sm" onclick="shiftWeek(-7)">←</button>
-      <span class="range">${fmtLong(days[0])} – ${fmtLong(days[5])}</span>
+      <span class="range">${fmtLong(days[0])} – ${fmtLong(days[6])}</span>
       <button class="btn btn-sm" onclick="shiftWeek(7)">→</button>
     </div>`;
 }
@@ -639,7 +648,7 @@ function buildOperatorDashboard() {
     [1,2,3].forEach(sh => {
       const g = calcG(wc, sh);
       if (!g.list.length) return;
-      html += `<div class="shift-card">
+      html += `<div class="shift-card shift-card-${sh}">
         <div class="shift-card-head">
           <div class="shift-card-head-left">
             <span class="badge badge-s${sh}">Shift ${sh}</span>
@@ -693,8 +702,8 @@ function buildMandorHadir(wc, sh) {
   if (!list.length) return weekNavHTML() + `<div class="empty">Belum ada karyawan. Tambah dulu di tab Karyawan.</div>`;
   const hasKopi = list.some(k => k.dapat_kopi);
   const hasMie  = list.some(k => k.dapat_mie);
-  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
-  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab'];
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
   const hdrs = dayNames.map((d,i) => `<th class="cb-cell">${d}<br><span style="font-size:10px;font-weight:400;color:var(--text3)">${fmt(days[i])}</span></th>`).join('');
   let html = weekNavHTML() + `<div class="table-wrap"><table><thead><tr>
     <th>Nama</th><th>Tipe</th><th>Susu</th>${hdrs}
@@ -849,8 +858,8 @@ function buildMasterAll() {
 }
 
 function buildMingguanAll() {
-  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
-  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab'];
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
   const hdrs = dayNames.map((d,i) => `<th class="cb-cell">${d}<br><span style="font-size:10px;font-weight:400;color:var(--text3)">${fmt(days[i])}</span></th>`).join('');
 
   let html = weekNavHTML();
@@ -894,7 +903,7 @@ function buildRekapAll() {
     [1,2,3].forEach(sh => {
       const g = calcG(wc, sh);
       if (!g.list.length) return;
-      html += `<div class="shift-card">
+      html += `<div class="shift-card shift-card-${sh}">
         <div class="shift-card-head">
           <div class="shift-card-head-left">
             <span class="badge badge-s${sh}">Shift ${sh}</span>
@@ -1126,8 +1135,8 @@ function downloadCSV() {
     if (a.tipe   !== b.tipe)   return a.tipe.localeCompare(b.tipe);
     return a.nama.localeCompare(b.nama);
   });
-  const days = [0,1,2,3,4,5].map(i => addDays(state.week, i));
-  const dayLabels = ['Sen','Sel','Rab','Kam','Jum','Sab'].map((d,i) => d + ' ' + fmt(days[i]));
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const dayLabels = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map((d,i) => d + ' ' + fmt(days[i]));
   const headers = ['Nama','Tipe','Shift','Lokasi',...dayLabels,'Total Hadir','Jatah Susu','Jatah Kopi','Jatah Mie'];
   const rows = list.map(k => {
     const h = getHadir(k.id), n = h.filter(Boolean).length;

@@ -1074,8 +1074,9 @@ async function buatAkunMandor() {
     btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
   }
 
-  // Simpan profil mandor + username (pakai sb utama yg masih punya session superadmin)
-  const { error: profErr } = await sb.from('profiles').upsert({
+  // Simpan profil mandor pakai sbTemp (login sebagai mandor itu sendiri)
+  // sehingga RLS policy "user insert own profile" (auth.uid() = id) terpenuhi
+  const { error: profErr } = await sbTemp.from('profiles').upsert({
     id: uid, nama, username, role: 'mandor', workcenter: wc, shift
   });
   if (profErr) {

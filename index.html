@@ -1063,12 +1063,25 @@ async function buatAkunMandor() {
     auth: { persistSession: false, autoRefreshToken: false }
   });
   const { data: signUpData, error: signUpErr } = await sbTemp.auth.signUp({ email: fakeEmail, password: pass });
-  if (signUpErr) {
+  if (signUpErr && !signUpErr.message.includes('already registered')) {
     errEl.textContent = 'Gagal buat akun: ' + signUpErr.message;
     btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
   }
 
-  const uid = signUpData.user?.id;
+  // Kalau signUp tidak beri session (email confirmation masih ON),
+  // atau user sudah ada sebelumnya — coba signIn langsung
+  let session = signUpData?.session;
+  let uid = signUpData?.user?.id;
+  if (!session) {
+    const { data: siData, error: siErr } = await sbTemp.auth.signInWithPassword({ email: fakeEmail, password: pass });
+    if (siErr || !siData.session) {
+      errEl.textContent = 'Matikan "Confirm email" di Supabase: Authentication → Sign In / Providers → Email → toggle OFF "Confirm email"';
+      btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+    }
+    session = siData.session;
+    uid = siData.user.id;
+  }
+
   if (!uid) {
     errEl.textContent = 'User ID tidak ditemukan, coba lagi';
     btn.textContent = '+ Buat Akun'; btn.disabled = false; return;

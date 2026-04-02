@@ -289,10 +289,17 @@ let state = {
 // ============================================================
 // HELPERS
 // ============================================================
+function fmtDate(d) {
+  // Format local date as YYYY-MM-DD (bukan UTC, hindari timezone shift)
+  return d.getFullYear() + '-'
+    + String(d.getMonth() + 1).padStart(2, '0') + '-'
+    + String(d.getDate()).padStart(2, '0');
+}
+
 function getMonday(d) {
   const day = d.getDay(), diff = day === 0 ? -6 : 1 - day;
   const m = new Date(d); m.setDate(d.getDate() + diff);
-  return m.toISOString().split('T')[0];
+  return fmtDate(m);
 }
 
 function addDays(wk, n) {
@@ -1017,7 +1024,7 @@ function setMandorTab(t) { state.mandorTab = t; render(); }
 function setAdminTab(t) { state.adminTab = t; render(); }
 function shiftWeek(n) {
   const d = new Date(state.week + 'T00:00:00'); d.setDate(d.getDate() + n);
-  state.week = d.toISOString().split('T')[0]; render();
+  state.week = fmtDate(d); render();
 }
 
 async function addKar() {

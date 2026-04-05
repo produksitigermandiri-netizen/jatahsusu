@@ -566,6 +566,11 @@ function buildHome() {
           </div>
         </div>
         <div class="sa-link"><button onclick="goLoginSuper()">Superadmin</button></div>
+        <div id="pwa-install-row" style="display:none;margin-top:1.25rem;">
+          <button onclick="triggerInstall()" style="width:100%;height:40px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <span>⬇</span> Install Aplikasi ke Perangkat
+          </button>
+        </div>
       </div>
     </div>`;
 }
@@ -1182,8 +1187,11 @@ const installClose  = document.getElementById('install-close');
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  // Tampilkan banner setelah 2 detik
-  setTimeout(() => installBanner.classList.add('show'), 2000);
+  // Tampilkan banner langsung
+  installBanner.classList.add('show');
+  // Tampilkan tombol di home jika sedang di home
+  const row = document.getElementById('pwa-install-row');
+  if (row) row.style.display = 'block';
 });
 
 installBtn.addEventListener('click', async () => {
@@ -1197,13 +1205,26 @@ installBtn.addEventListener('click', async () => {
 
 installClose.addEventListener('click', () => {
   installBanner.classList.remove('show');
-  deferredPrompt = null;
 });
 
 window.addEventListener('appinstalled', () => {
   installBanner.classList.remove('show');
+  deferredPrompt = null;
   showToast('App berhasil diinstall!');
 });
+
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(({ outcome }) => {
+      deferredPrompt = null;
+      installBanner.classList.remove('show');
+      if (outcome === 'accepted') showToast('App berhasil diinstall!');
+    });
+  } else {
+    showToast('Gunakan tombol install di address bar browser');
+  }
+}
 </script>
 </body>
 </html>

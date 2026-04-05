@@ -201,6 +201,16 @@
     .slbl { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .09em; margin-bottom: .875rem; }
     .toast { position: fixed; bottom: 1.5rem; right: 1.5rem; background: var(--bg4); color: var(--text); border: 1px solid var(--border2); padding: 10px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 999; }
     .toast.show { opacity: 1; }
+    .install-banner { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(120px); background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow-lg); z-index: 998; transition: transform .35s cubic-bezier(.34,1.56,.64,1); min-width: 280px; max-width: 360px; }
+    .install-banner.show { transform: translateX(-50%) translateY(0); }
+    .install-banner-icon { width: 42px; height: 42px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+    .install-banner-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .install-banner-text { flex: 1; }
+    .install-banner-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--text); }
+    .install-banner-text span { font-size: 11px; color: var(--text3); }
+    .install-banner-btn { background: var(--info2); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; letter-spacing: .04em; }
+    .install-banner-btn:hover { background: var(--info); }
+    .install-banner-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0 2px; line-height: 1; flex-shrink: 0; }
     .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 1rem; border: 1px solid; }
     .alert-info { background: var(--info-bg); color: var(--info); border-color: rgba(68,147,248,.25); }
   </style>
@@ -208,6 +218,15 @@
 <body>
 <div id="app"></div>
 <div class="toast" id="toast"></div>
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-icon"><img src="logo.jpg" alt="logo"></div>
+  <div class="install-banner-text">
+    <strong>Install Jatah Karyawan</strong>
+    <span>Tambahkan ke layar utama</span>
+  </div>
+  <button class="install-banner-btn" id="install-btn">Install</button>
+  <button class="install-banner-close" id="install-close">×</button>
+</div>
 
 <script>
 // ============================================================
@@ -1153,6 +1172,38 @@ init();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
+
+// ---- PWA INSTALL PROMPT ----
+let deferredPrompt = null;
+const installBanner = document.getElementById('install-banner');
+const installBtn    = document.getElementById('install-btn');
+const installClose  = document.getElementById('install-close');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Tampilkan banner setelah 2 detik
+  setTimeout(() => installBanner.classList.add('show'), 2000);
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBanner.classList.remove('show');
+  if (outcome === 'accepted') showToast('App berhasil diinstall!');
+});
+
+installClose.addEventListener('click', () => {
+  installBanner.classList.remove('show');
+  deferredPrompt = null;
+});
+
+window.addEventListener('appinstalled', () => {
+  installBanner.classList.remove('show');
+  showToast('App berhasil diinstall!');
+});
 </script>
 </body>
 </html>

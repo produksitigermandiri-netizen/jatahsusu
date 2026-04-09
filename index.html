@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jatah Karyawan - PT. Tigermandiri Pratama</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1e2533">
+  <meta name="theme-color" content="#f0f2f5">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,37 +18,37 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── SEMI-DARK WARM SLATE ─────────────────────────────────── */
+    /* ── LIGHT THEME — CLEAN FORMAL ──────────────────────────── */
     :root {
-      --bg:        #1e2533;
-      --bg2:       #252e40;
-      --bg3:       #2c364a;
-      --bg4:       #333f56;
-      --text:      #dce6f5;
-      --text2:     #8da3c4;
-      --text3:     #556480;
-      --border:    rgba(255,255,255,0.06);
-      --border2:   rgba(255,255,255,0.11);
-      --info-bg:   rgba(82,154,255,0.10);
-      --info:      #529aff;
-      --info2:     #3b82e6;
-      --success:   #43c97a;
-      --danger:    #f06a65;
-      --amber:     #f5a623;
-      --purple:    #a78bfa;
+      --bg:        #f0f2f5;
+      --bg2:       #ffffff;
+      --bg3:       #f4f6f9;
+      --bg4:       #e8ebf0;
+      --text:      #1a2030;
+      --text2:     #4a5568;
+      --text3:     #94a3b8;
+      --border:    rgba(0,0,0,0.07);
+      --border2:   rgba(0,0,0,0.11);
+      --info-bg:   rgba(59,130,246,0.08);
+      --info:      #2563eb;
+      --info2:     #1d4ed8;
+      --success:   #16a34a;
+      --danger:    #dc2626;
+      --amber:     #d97706;
+      --purple:    #7c3aed;
       --radius:    9px;
       --radius-lg: 14px;
-      --shadow-sm: 0 1px 4px rgba(0,0,0,.35);
-      --shadow:    0 4px 20px rgba(0,0,0,.45);
-      --shadow-lg: 0 16px 48px rgba(0,0,0,.55);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow:    0 4px 16px rgba(0,0,0,.10);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,.14);
     }
 
     body {
       font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       background-image:
-        radial-gradient(ellipse at 20% 0%, rgba(59,130,230,0.07) 0%, transparent 60%),
-        radial-gradient(ellipse at 80% 100%, rgba(82,154,255,0.05) 0%, transparent 50%);
+        radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(99,102,241,0.03) 0%, transparent 50%);
       color: var(--text);
       font-size: 14px;
       line-height: 1.55;
@@ -129,15 +129,10 @@
 
     /* Left panel — branding */
     .home-left {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
-      padding: 3rem 3.5rem;
-      width: 42%;
-      flex-shrink: 0;
-      border-right: 1px solid var(--border2);
-      position: relative;
-      background: linear-gradient(160deg, rgba(59,130,230,.06) 0%, transparent 60%);
+      display: none; flex-direction: column; justify-content: center;
+      padding: 3rem 3.5rem; width: 42%; flex-shrink: 0;
+      border-right: 1px solid var(--border2); position: relative;
+      background: linear-gradient(160deg, rgba(29,78,216,.05) 0%, rgba(124,58,237,.03) 100%);
     }
     @media (min-width: 768px) { .home-left { display: flex; } }
 
@@ -382,15 +377,15 @@
       display: inline-block; padding: 2px 9px; border-radius: 100px;
       font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
     }
-    .badge-tiger   { background: rgba(82,154,255,.14); color: var(--info); border: 1px solid rgba(82,154,255,.22); }
-    .badge-yayasan { background: rgba(67,201,122,.12); color: var(--success); border: 1px solid rgba(67,201,122,.2); }
+    .badge-tiger   { background: rgba(37,99,235,.10); color: #1d4ed8; border: 1px solid rgba(37,99,235,.2); }
+    .badge-yayasan { background: rgba(22,163,74,.10); color: #15803d; border: 1px solid rgba(22,163,74,.2); }
     /* Shift badges — solid pill, tiap shift warna beda dan jelas */
-    .badge-s1 { background: var(--info2); color: #fff; border: none; box-shadow: 0 2px 8px rgba(59,130,230,.4); padding: 3px 11px; font-size: 11px; }
-    .badge-s2 { background: #7c3aed; color: #fff; border: none; box-shadow: 0 2px 8px rgba(124,58,237,.4); padding: 3px 11px; font-size: 11px; }
-    .badge-s3 { background: #d97706; color: #fff; border: none; box-shadow: 0 2px 8px rgba(217,119,6,.4); padding: 3px 11px; font-size: 11px; }
-    /* Workcenter badges — lebih solid dan kontras */
-    .badge-asm { background: rgba(67,201,122,.18); color: #2dd769; border: 1.5px solid rgba(67,201,122,.32); font-size: 11px; padding: 3px 11px; }
-    .badge-inj { background: rgba(240,106,101,.16); color: #f87171; border: 1.5px solid rgba(240,106,101,.30); font-size: 11px; padding: 3px 11px; }
+    .badge-s1 { background: #1d4ed8; color: #fff; border: none; box-shadow: 0 2px 6px rgba(29,78,216,.3); padding: 3px 11px; font-size: 11px; }
+    .badge-s2 { background: #7c3aed; color: #fff; border: none; box-shadow: 0 2px 6px rgba(124,58,237,.3); padding: 3px 11px; font-size: 11px; }
+    .badge-s3 { background: #d97706; color: #fff; border: none; box-shadow: 0 2px 6px rgba(217,119,6,.3);  padding: 3px 11px; font-size: 11px; }
+    /* Workcenter badges */
+    .badge-asm { background: rgba(22,163,74,.12); color: #15803d; border: 1.5px solid rgba(22,163,74,.25); font-size: 11px; padding: 3px 11px; }
+    .badge-inj { background: rgba(220,38,38,.10); color: #b91c1c; border: 1.5px solid rgba(220,38,38,.22); font-size: 11px; padding: 3px 11px; }
 
     /* ── METRIC CARDS ────────────────────────────────────────── */
     .metric-grid { display: grid; gap: 12px; margin-bottom: 2rem; }
@@ -431,8 +426,8 @@
     }
     .filter-chip:hover { border-color: rgba(255,255,255,.18); color: var(--text); background: var(--bg4); }
     .filter-chip.active { background: var(--info2); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(59,130,230,.35); }
-    .filter-chip.active-asm { background: rgba(67,201,122,.2); color: #2dd769; border-color: rgba(67,201,122,.35); }
-    .filter-chip.active-inj { background: rgba(240,106,101,.18); color: #f87171; border-color: rgba(240,106,101,.32); }
+    .filter-chip.active-asm { background: rgba(22,163,74,.12); color: #15803d; border-color: rgba(22,163,74,.3); }
+    .filter-chip.active-inj { background: rgba(220,38,38,.10); color: #b91c1c; border-color: rgba(220,38,38,.25); }
     .filter-chip.active-s1  { background: var(--info2); color: #fff; border-color: transparent; }
     .filter-chip.active-s2  { background: #7c3aed; color: #fff; border-color: transparent; }
     .filter-chip.active-s3  { background: #d97706; color: #fff; border-color: transparent; }
@@ -520,17 +515,17 @@
       margin-bottom: 1rem; padding: 10px 14px;
       border-radius: var(--radius);
     }
-    .wc-section-header-asm { background: rgba(67,201,122,.06); border: 1px solid rgba(67,201,122,.15); }
-    .wc-section-header-inj { background: rgba(240,106,101,.06); border: 1px solid rgba(240,106,101,.15); }
+    .wc-section-header-asm { background: rgba(22,163,74,.06); border: 1px solid rgba(22,163,74,.16); }
+    .wc-section-header-inj { background: rgba(220,38,38,.05); border: 1px solid rgba(220,38,38,.13); }
     .wc-section-name {
       font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
     }
-    .wc-section-name-asm { color: #2dd769; }
-    .wc-section-name-inj { color: #f87171; }
+    .wc-section-name-asm { color: #15803d; }
+    .wc-section-name-inj { color: #b91c1c; }
     .wc-section-count { font-size: 11px; color: var(--text3); font-weight: 500; }
     .wc-section-divider { flex: 1; height: 1px; }
-    .wc-section-divider-asm { background: rgba(67,201,122,.15); }
-    .wc-section-divider-inj { background: rgba(240,106,101,.15); }
+    .wc-section-divider-asm { background: rgba(22,163,74,.15); }
+    .wc-section-divider-inj { background: rgba(220,38,38,.12); }
     .wc-section-total {
       font-size: 11px; font-weight: 700; color: var(--text2);
       background: var(--bg3); border: 1px solid var(--border2);
@@ -544,19 +539,14 @@
       border-radius: var(--radius-lg); overflow: hidden;
       margin-bottom: 12px; box-shadow: var(--shadow-sm);
     }
-    .shift-card-premium-s1 { border-top: 2px solid var(--info); }
+    .shift-card-premium-s1 { border-top: 2px solid #1d4ed8; }
     .shift-card-premium-s2 { border-top: 2px solid #7c3aed; }
     .shift-card-premium-s3 { border-top: 2px solid #d97706; }
 
-    .shift-head-premium {
-      display: flex; align-items: center;
-      padding: 12px 16px; gap: 12px;
-      border-bottom: 1px solid var(--border2);
-      flex-wrap: wrap;
-    }
-    .shift-head-premium-s1 { background: rgba(59,130,230,.07); }
-    .shift-head-premium-s2 { background: rgba(124,58,237,.07); }
-    .shift-head-premium-s3 { background: rgba(217,119,6,.07); }
+    .shift-head-premium { display: flex; align-items: center; padding: 12px 16px; gap: 12px; border-bottom: 1px solid var(--border2); flex-wrap: wrap; }
+    .shift-head-premium-s1 { background: rgba(29,78,216,.05); }
+    .shift-head-premium-s2 { background: rgba(124,58,237,.05); }
+    .shift-head-premium-s3 { background: rgba(217,119,6,.05); }
 
     .shift-head-left { display: flex; align-items: center; gap: 10px; flex: 1; }
     .shift-karyawan-count {
@@ -642,13 +632,13 @@
       overflow: hidden; margin-bottom: 1rem;
       box-shadow: var(--shadow-sm); background: var(--bg2);
     }
-    .shift-card-1 { border-left-color: var(--info); }
+    .shift-card-1 { border-left-color: var(--info2); }
     .shift-card-2 { border-left-color: #7c3aed; }
     .shift-card-3 { border-left-color: #d97706; }
     /* Header shift card ikut warna shift */
-    .shift-card-1 .shift-card-head { background: rgba(59,130,230,.10); border-bottom-color: rgba(59,130,230,.18); }
-    .shift-card-2 .shift-card-head { background: rgba(124,58,237,.10); border-bottom-color: rgba(124,58,237,.18); }
-    .shift-card-3 .shift-card-head { background: rgba(217,119,6,.10); border-bottom-color: rgba(217,119,6,.18); }
+    .shift-card-1 .shift-card-head { background: rgba(29,78,216,.06); border-bottom-color: rgba(29,78,216,.12); }
+    .shift-card-2 .shift-card-head { background: rgba(124,58,237,.06); border-bottom-color: rgba(124,58,237,.12); }
+    .shift-card-3 .shift-card-head { background: rgba(217,119,6,.06);  border-bottom-color: rgba(217,119,6,.12); }
     .shift-card-head {
       display: flex; align-items: center; justify-content: space-between;
       padding: 13px 16px; background: var(--bg3);
@@ -748,6 +738,7 @@ let state = {
   loginForm: { email: '', password: '', err: '' },
   editingKaryawanId: null,  // id karyawan yg sedang di-edit nama
   rekapFilter: { wc: 'all', shift: 'all' },  // filter rekap operator
+  searchHadir: '',  // search nama di input hadir
 };
 
 // ============================================================
@@ -1463,23 +1454,59 @@ function buildMandor() {
 }
 
 function buildMandorHadir(wc, sh) {
-  const list = groupKar(wc, sh);
-  if (!list.length) return weekNavHTML() + `<div class="empty">Belum ada karyawan. Tambah dulu di tab Karyawan.</div>`;
-  const hasKopi = list.some(k => k.dapat_kopi);
-  const hasMie  = list.some(k => k.dapat_mie);
-  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const listAll = groupKar(wc, sh);
+  if (!listAll.length) return weekNavHTML() + `<div class="empty">Belum ada karyawan. Tambah dulu di tab Karyawan.</div>`;
+
+  const q = (state.searchHadir || '').toLowerCase().trim();
+  const list = q ? listAll.filter(k => k.nama.toLowerCase().includes(q)) : listAll;
+
+  const hasKopi = listAll.some(k => k.dapat_kopi);
+  const hasMie  = listAll.some(k => k.dapat_mie);
+  const days    = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
   const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
   const hdrs = dayNames.map((d,i) => `<th class="cb-cell">${d}<br><span style="font-size:10px;font-weight:400;color:var(--text3)">${fmt(days[i])}</span></th>`).join('');
-  let html = weekNavHTML() + `<div class="table-wrap"><table><thead><tr>
+
+  let html = weekNavHTML();
+
+  // Search bar
+  html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:200px;max-width:320px;">
+      <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;">🔍</span>
+      <input type="text" id="search-hadir-input"
+        value="${(state.searchHadir||'').replace(/"/g,'&quot;')}"
+        placeholder="Cari nama karyawan..."
+        oninput="state.searchHadir=this.value;render()"
+        style="width:100%;height:36px;padding:0 12px 0 34px;border-radius:var(--radius);border:1.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .15s,box-shadow .15s;"
+        onfocus="this.style.borderColor='var(--info)';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.12)'"
+        onblur="this.style.borderColor='';this.style.boxShadow=''">
+    </div>
+    <span style="font-size:12px;color:var(--text3);font-weight:500;">
+      ${q ? `${list.length} dari ${listAll.length} karyawan` : `${listAll.length} karyawan`}
+    </span>
+    ${q ? `<button onclick="state.searchHadir='';render()" style="background:none;border:1px solid var(--border2);border-radius:var(--radius);height:30px;padding:0 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:inherit;">✕ Reset</button>` : ''}
+  </div>`;
+
+  if (!list.length) {
+    html += `<div class="empty">Tidak ada karyawan dengan nama "<strong>${state.searchHadir}</strong>"</div>`;
+    return html;
+  }
+
+  html += `<div class="table-wrap"><table><thead><tr>
     <th>Nama</th><th>Tipe</th><th>Susu</th>${hdrs}
     <th class="num-cell">Hadir</th>
     ${hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
     ${hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
   </tr></thead><tbody>`;
+
   list.forEach(k => {
     const h = getHadir(k.id), tot = h.filter(Boolean).length;
+    // Highlight nama kalau ada query
+    const namaDisplay = q
+      ? k.nama.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
+          '<mark style="background:rgba(37,99,235,.15);color:var(--info);border-radius:3px;padding:0 2px">$1</mark>')
+      : k.nama;
     html += `<tr>
-      <td>${k.nama}</td>
+      <td>${namaDisplay}</td>
       <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
       <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:11px">Ya</span>' : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
       ${h.map((v,di) => `<td class="cb-cell"><input type="checkbox" ${v?'checked':''} data-kid="${k.id}" data-day="${di}"></td>`).join('')}
@@ -1823,7 +1850,7 @@ function goOperator() { state.role = 'operator'; state.screen = 'app'; render();
 function goLoginMandor() { state.screen = 'loginMandor'; render(); }
 function goLoginSuper() { state.screen = 'loginSuper'; render(); }
 function goHome() { state.role = null; state.screen = 'home'; render(); }
-function setMandorTab(t) { state.mandorTab = t; render(); }
+function setMandorTab(t) { state.mandorTab = t; state.searchHadir = ''; render(); }
 function setAdminTab(t) { state.adminTab = t; render(); }
 function shiftWeek(n) {
   const d = new Date(state.week + 'T00:00:00'); d.setDate(d.getDate() + n);

@@ -3,223 +3,1046 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jatah Karyawan • Tigermandiri</title>
+  <title>Jatah Karyawan - PT. Tigermandiri Pratama</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0ea5e9">
+  <meta name="theme-color" content="#f0f2f5">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Jatah Karyawan">
   <link rel="apple-touch-icon" href="logo.jpg">
-  
-  <!-- Tailwind CSS CDN (super modern) -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Chart.js + Confetti (visual & fun) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-    
-    :root {
-      --tw-color-primary: #0ea5e9;
-    }
-    
-    * { transition-property: color, background-color, border-color, text-decoration-color, fill, stroke; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
-    
-    .tail-container * { font-family: 'Inter', system_ui, sans-serif; }
-    .logo-font { font-family: 'Space Grotesk', sans-serif; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* Dark mode variables */
-    html.dark {
-      --bg: #0a0a0a;
-      --bg2: #161618;
-      --bg3: #212126;
-      --text: #f8f9fa;
-      --text2: #a1a1aa;
-      --text3: #71717a;
-      --border: #27272a;
-      --info: #0ea5e9;
+    /* ── LIGHT THEME — CLEAN FORMAL ──────────────────────────── */
+    :root {
+      --bg:        #f0f2f5;
+      --bg2:       #ffffff;
+      --bg3:       #f4f6f9;
+      --bg4:       #e8ebf0;
+      --text:      #1a2030;
+      --text2:     #4a5568;
+      --text3:     #94a3b8;
+      --border:    rgba(0,0,0,0.07);
+      --border2:   rgba(0,0,0,0.11);
+      --info-bg:   rgba(59,130,246,0.08);
+      --info:      #2563eb;
+      --info2:     #1d4ed8;
+      --success:   #16a34a;
+      --danger:    #dc2626;
+      --amber:     #d97706;
+      --purple:    #7c3aed;
+      --radius:    9px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+      --shadow:    0 4px 16px rgba(0,0,0,.10);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,.14);
     }
 
     body {
-      background: var(--bg, #f8fafc);
-      color: var(--text, #0f172a);
+      font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(59,130,246,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(99,102,241,0.03) 0%, transparent 50%);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.55;
+      min-height: 100vh;
     }
 
-    .glass {
-      background: rgba(255,255,255,0.7);
-      backdrop-filter: blur(12px);
-    }
-    html.dark .glass { background: rgba(23,23,23,0.7); }
+    #app { max-width: 980px; margin: 0 auto; padding: 1.5rem 1rem; }
 
-    .card-hover {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* ── LOADING ─────────────────────────────────────────────── */
+    .loading { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 16px; }
+    .spinner { width: 34px; height: 34px; border: 2.5px solid var(--border2); border-top-color: var(--info); border-radius: 50%; animation: spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOPBAR ──────────────────────────────────────────────── */
+    .topbar {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 2rem; padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border2);
+      flex-wrap: wrap;
     }
-    .card-hover:hover {
-      transform: translateY(-3px);
-      box-shadow: 25px 25px 50px -12px rgb(0 0 0 / 0.15);
+    .topbar-brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+    .topbar-brand-icon {
+      width: 30px; height: 30px; background: var(--info2);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; box-shadow: 0 2px 8px rgba(59,130,230,.35);
+    }
+    .topbar-title { font-size: 14px; font-weight: 700; color: var(--text); letter-spacing: -.01em; }
+    .topbar-meta { display: flex; gap: 6px; align-items: center; margin-right: 4px; }
+
+    /* ── BUTTONS ─────────────────────────────────────────────── */
+    .btn {
+      padding: 0 14px; height: 34px; border-radius: var(--radius);
+      border: 1px solid var(--border2); background: var(--bg3);
+      cursor: pointer; font-size: 13px; color: var(--text2);
+      white-space: nowrap; font-weight: 500;
+      font-family: inherit;
+      transition: all .13s;
+    }
+    .btn:hover { background: var(--bg4); color: var(--text); border-color: rgba(255,255,255,.16); }
+    .btn.active {
+      background: var(--info2); color: #fff; border-color: transparent;
+      font-weight: 600; box-shadow: 0 0 0 3px rgba(59,130,230,.22), 0 2px 8px rgba(59,130,230,.3);
+    }
+    .btn.active:hover { opacity: .92; }
+    .btn-sm { height: 29px; font-size: 12px; padding: 0 11px; }
+    .btn-primary { color: var(--info); border-color: rgba(82,154,255,.35); background: var(--info-bg); }
+    .btn-primary:hover { background: rgba(82,154,255,.18); color: var(--info); border-color: var(--info2); }
+    .btn-danger { color: var(--danger); border-color: rgba(240,106,101,.3); font-size: 11px; height: 27px; padding: 0 10px; background: rgba(240,106,101,.06); }
+    .btn-danger:hover { background: rgba(240,106,101,.14); border-color: var(--danger); }
+    .btn-block {
+      width: 100%; height: 46px; font-size: 13px; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: #fff; background: var(--info2);
+      border: none; border-radius: var(--radius);
+      cursor: pointer; font-family: inherit;
+      transition: all .15s;
+      box-shadow: 0 4px 14px rgba(59,130,230,.35);
+    }
+    .btn-block:hover { background: var(--info); box-shadow: 0 6px 20px rgba(82,154,255,.4); transform: translateY(-1px); }
+    .btn-block:active { transform: translateY(0); box-shadow: 0 2px 8px rgba(59,130,230,.3); }
+
+    /* ── HOME ────────────────────────────────────────────────── */
+    .home-outer {
+      min-height: 100vh; display: flex; align-items: stretch;
+      margin: -1.5rem -1rem; overflow: hidden; position: relative;
     }
 
-    .live-dot {
-      animation: pulse 2s infinite;
+    /* Background decorative elements */
+    .home-outer::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 50%, rgba(59,130,230,.13) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 85% 20%, rgba(124,58,237,.08) 0%, transparent 50%),
+        radial-gradient(ellipse 30% 40% at 80% 80%, rgba(59,130,230,.06) 0%, transparent 50%);
+      pointer-events: none;
     }
+
+    /* Left panel — branding */
+    .home-left {
+      display: none; flex-direction: column; justify-content: center;
+      padding: 3rem 3.5rem; width: 42%; flex-shrink: 0;
+      border-right: 1px solid var(--border2); position: relative;
+      background: linear-gradient(160deg, rgba(29,78,216,.05) 0%, rgba(124,58,237,.03) 100%);
+    }
+    @media (min-width: 768px) { .home-left { display: flex; } }
+
+    .home-left-logo {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 3.5rem;
+    }
+    .home-left-logo-img {
+      width: 52px; height: 52px; border-radius: 14px; overflow: hidden; flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(59,130,230,.3), 0 0 0 1px rgba(82,154,255,.2);
+    }
+    .home-left-logo-img img { width: 100%; height: 100%; object-fit: cover; }
+    .home-left-logo-text { font-size: 13px; font-weight: 700; color: var(--text2); letter-spacing: .01em; }
+    .home-left-logo-text span { display: block; font-size: 10px; font-weight: 600; color: var(--text3); letter-spacing: .07em; text-transform: uppercase; margin-top: 2px; }
+
+    .home-left-headline {
+      font-size: 34px; font-weight: 700; color: var(--text);
+      line-height: 1.2; letter-spacing: -.04em; margin-bottom: 1rem;
+    }
+    .home-left-headline em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--info) 0%, #a78bfa 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .home-left-sub {
+      font-size: 13px; color: var(--text2); line-height: 1.7; max-width: 280px;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Stats row di kiri */
+    .home-stats { display: flex; gap: 1.5rem; }
+    .home-stat { }
+    .home-stat-val { font-size: 28px; font-weight: 700; color: var(--text); font-family: 'IBM Plex Mono', monospace; letter-spacing: -.03em; line-height: 1; }
+    .home-stat-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; font-weight: 600; margin-top: 4px; }
+    .home-stat-div { width: 1px; background: var(--border2); align-self: stretch; }
+
+    /* Decorative corner grid */
+    .home-left-deco {
+      position: absolute; bottom: 2rem; right: 2rem; opacity: .07;
+      width: 120px; height: 120px;
+      background-image: radial-gradient(circle, var(--info) 1.5px, transparent 1.5px);
+      background-size: 16px 16px;
+    }
+
+    /* Right panel — access */
+    .home-right {
+      flex: 1; display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 2rem 1.5rem; position: relative;
+    }
+    .home-right-inner { width: 100%; max-width: 380px; }
+
+    /* Mobile header (hidden on desktop) */
+    .home-mobile-header {
+      text-align: center; margin-bottom: 2.5rem;
+    }
+    @media (min-width: 768px) { .home-mobile-header { display: none; } }
+    .home-mobile-logo {
+      width: 64px; height: 64px; border-radius: 18px; overflow: hidden;
+      margin: 0 auto 1rem;
+      box-shadow: 0 8px 28px rgba(59,130,230,.35), 0 0 0 1px rgba(82,154,255,.2);
+    }
+    .home-mobile-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .home-mobile-title { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -.03em; }
+    .home-mobile-sub { font-size: 11px; color: var(--text3); letter-spacing: .07em; text-transform: uppercase; margin-top: 4px; font-weight: 600; }
+
+    /* Access section label */
+    .home-access-label {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: .12em;
+      margin-bottom: 1.25rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .home-access-label::before, .home-access-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border2);
+    }
+
+    /* Access cards — stacked, full width */
+    .access-card {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 1.1rem 1.25rem;
+      cursor: pointer;
+      transition: all .18s;
+      box-shadow: var(--shadow-sm);
+      display: flex; align-items: center; gap: 1rem;
+      margin-bottom: 10px;
+      position: relative; overflow: hidden;
+    }
+    .access-card::after {
+      content: '›';
+      position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%);
+      font-size: 20px; color: var(--text3);
+      transition: all .18s;
+    }
+    .access-card:hover {
+      border-color: var(--info2);
+      background: var(--bg3);
+      box-shadow: var(--shadow), 0 0 0 1px rgba(82,154,255,.15);
+      transform: translateX(3px);
+    }
+    .access-card:hover::after { right: 1rem; color: var(--info); }
+    .access-card-icon {
+      width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .access-card-icon-operator { background: rgba(82,154,255,.12); border: 1px solid rgba(82,154,255,.2); }
+    .access-card-icon-mandor   { background: rgba(67,201,122,.12); border: 1px solid rgba(67,201,122,.2); }
+    .access-card-body { flex: 1; }
+    .access-card-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .access-card-desc { font-size: 12px; color: var(--text2); line-height: 1.5; padding-right: 1.5rem; }
+    .access-card-badge {
+      font-size: 9px; font-weight: 700; color: var(--text3);
+      letter-spacing: .08em; text-transform: uppercase;
+      background: var(--bg4); border: 1px solid var(--border2);
+      padding: 2px 7px; border-radius: 100px; margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* Divider */
+    .home-or {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 10px; color: var(--text3); font-weight: 600;
+      text-transform: uppercase; letter-spacing: .08em;
+      margin: 4px 0 10px;
+    }
+    .home-or::before, .home-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Superadmin link */
+    .home-sa {
+      text-align: center; margin-top: 1.25rem;
+    }
+    .home-sa button {
+      background: none; border: 1px solid var(--border2);
+      border-radius: var(--radius); height: 32px; padding: 0 16px;
+      font-size: 11px; color: var(--text3); cursor: pointer;
+      transition: all .15s; letter-spacing: .04em;
+      font-family: inherit; font-weight: 600;
+    }
+    .home-sa button:hover { color: var(--text2); background: var(--bg3); border-color: rgba(255,255,255,.15); }
+
+    /* Week info pill */
+    .home-week-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 100px; padding: 5px 12px;
+      font-size: 11px; color: var(--text2); font-weight: 500;
+      margin-bottom: 2rem;
+    }
+    .home-week-pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.5} }
+
+    /* ── LOGIN ───────────────────────────────────────────────── */
+    .login-outer {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      padding: 2rem 1rem; margin: -1.5rem -1rem;
+    }
+    .login-card {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      width: 100%; max-width: 390px;
+      box-shadow: var(--shadow-lg);
+    }
+    .login-icon {
+      width: 68px; height: 68px; background: var(--info2);
+      border-radius: 20px; display: flex; align-items: center; justify-content: center;
+      font-size: 32px; margin: 0 auto 1.5rem;
+      box-shadow: 0 8px 28px rgba(59,130,230,.38);
+    }
+    .login-card h2 { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; letter-spacing: -.03em; color: var(--text); }
+    .login-card .sub { font-size: 11px; color: var(--text3); margin-bottom: 2rem; text-align: center; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; }
+    .login-divider { height: 1px; background: var(--border2); margin-bottom: 2rem; }
+    .back-link { margin-top: 1.25rem; text-align: center; }
+    .back-link button { background: none; border: none; font-size: 12px; color: var(--text3); cursor: pointer; transition: color .15s; font-family: inherit; }
+    .back-link button:hover { color: var(--text2); }
+    .err-msg { font-size: 12px; color: var(--danger); margin: 8px 0; min-height: 18px; text-align: center; font-weight: 500; }
+
+    /* ── FORMS ───────────────────────────────────────────────── */
+    .field { margin-bottom: 1.1rem; }
+    .field label {
+      font-size: 10px; color: var(--text2); display: block;
+      margin-bottom: 7px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .09em;
+    }
+    .field input[type=text],
+    .field input[type=email],
+    .field input[type=password],
+    .field select {
+      width: 100%; font-size: 14px; padding: 10px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border2);
+      background: var(--bg3); color: var(--text);
+      height: 44px;
+      font-family: inherit;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .field input::placeholder { color: var(--text3); }
+    .field input:focus, .field select:focus {
+      outline: none; border-color: var(--info);
+      box-shadow: 0 0 0 3px rgba(82,154,255,.15);
+      background: var(--bg4);
+    }
+    .field select option { background: var(--bg3); }
+    .inline-form { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 1rem; }
+    .inline-form .field { margin-bottom: 0; }
+    .inline-form .field input[type=text], .inline-form .field select { height: 36px; font-size: 13px; padding: 6px 10px; }
+    .check-row { display: flex; align-items: center; gap: 9px; height: 34px; }
+    .check-row input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--info); cursor: pointer; }
+    .check-row label { font-size: 13px; color: var(--text); cursor: pointer; font-weight: 500; text-transform: none; letter-spacing: 0; }
+
+    /* ── WEEK NAV ────────────────────────────────────────────── */
+    .week-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .week-nav span.lbl { font-size: 10px; color: var(--text3); font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+    .week-nav span.range { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+
+    /* ── TABLES ──────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      font-weight: 700; font-size: 10px; color: var(--text3);
+      text-align: left; padding: 10px 12px;
+      border-bottom: 1px solid var(--border2);
+      white-space: nowrap; text-transform: uppercase;
+      letter-spacing: .08em; background: var(--bg3);
+    }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover > td { background: rgba(255,255,255,.03); transition: background .08s; }
+    .subtotal td { font-weight: 700; background: var(--bg4); font-size: 12px; }
+    .subtotal:hover > td { background: var(--bg4) !important; }
+    .cb-cell { text-align: center; }
+    .cb-cell input { width: 17px; height: 17px; cursor: pointer; accent-color: var(--info); }
+    .num-cell { text-align: center; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
+    .jatah-head { background: var(--info-bg); color: var(--info); text-align: center; font-size: 11px; font-weight: 700; }
+    .jatah-val { text-align: center; font-weight: 700; color: var(--info); font-family: 'IBM Plex Mono', monospace; }
+
+    /* ── BADGES ──────────────────────────────────────────────── */
+    .badge {
+      display: inline-block; padding: 2px 9px; border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .badge-tiger   { background: rgba(37,99,235,.10); color: #1d4ed8; border: 1px solid rgba(37,99,235,.2); }
+    .badge-yayasan { background: rgba(22,163,74,.10); color: #15803d; border: 1px solid rgba(22,163,74,.2); }
+    /* Shift badges — solid pill, tiap shift warna beda dan jelas */
+    .badge-s1 { background: #1d4ed8; color: #fff; border: none; box-shadow: 0 2px 6px rgba(29,78,216,.3); padding: 3px 11px; font-size: 11px; }
+    .badge-s2 { background: #7c3aed; color: #fff; border: none; box-shadow: 0 2px 6px rgba(124,58,237,.3); padding: 3px 11px; font-size: 11px; }
+    .badge-s3 { background: #d97706; color: #fff; border: none; box-shadow: 0 2px 6px rgba(217,119,6,.3);  padding: 3px 11px; font-size: 11px; }
+    /* Workcenter badges */
+    .badge-asm { background: rgba(22,163,74,.12); color: #15803d; border: 1.5px solid rgba(22,163,74,.25); font-size: 11px; padding: 3px 11px; }
+    .badge-inj { background: rgba(220,38,38,.10); color: #b91c1c; border: 1.5px solid rgba(220,38,38,.22); font-size: 11px; padding: 3px 11px; }
+
+    /* ── METRIC CARDS ────────────────────────────────────────── */
+    .metric-grid { display: grid; gap: 12px; margin-bottom: 2rem; }
+    .mc {
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      padding: 1.3rem 1.5rem;
+      border-top: 2px solid var(--info2);
+      box-shadow: var(--shadow-sm);
+      position: relative; overflow: hidden;
+    }
+    .mc::before {
+      content: ''; position: absolute; top: 0; right: 0;
+      width: 80px; height: 80px;
+      background: radial-gradient(circle at top right, rgba(82,154,255,.08), transparent 70%);
+      pointer-events: none;
+    }
+    .mc-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .09em; margin-bottom: 10px; font-weight: 700; }
+    .mc-val { font-size: 48px; font-weight: 700; color: var(--info); line-height: 1; letter-spacing: -.04em; font-family: 'IBM Plex Mono', monospace; }
+    .mc-sub { font-size: 11px; color: var(--text3); margin-top: 8px; }
+
+    /* ── FILTER BAR ──────────────────────────────────────────── */
+    .rekap-filter {
+      display: flex; align-items: center; gap: 8px;
+      flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .rekap-filter-label {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: .09em; white-space: nowrap;
+    }
+    .filter-chip {
+      height: 30px; padding: 0 13px; border-radius: 100px;
+      border: 1px solid var(--border2); background: var(--bg3);
+      color: var(--text2); font-size: 12px; font-weight: 600;
+      cursor: pointer; transition: all .13s; font-family: inherit;
+      white-space: nowrap;
+    }
+    .filter-chip:hover { border-color: rgba(255,255,255,.18); color: var(--text); background: var(--bg4); }
+    .filter-chip.active { background: var(--info2); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(59,130,230,.35); }
+    .filter-chip.active-asm { background: rgba(22,163,74,.12); color: #15803d; border-color: rgba(22,163,74,.3); }
+    .filter-chip.active-inj { background: rgba(220,38,38,.10); color: #b91c1c; border-color: rgba(220,38,38,.25); }
+    .filter-chip.active-s1  { background: var(--info2); color: #fff; border-color: transparent; }
+    .filter-chip.active-s2  { background: #7c3aed; color: #fff; border-color: transparent; }
+    .filter-chip.active-s3  { background: #d97706; color: #fff; border-color: transparent; }
+    .filter-divider { width: 1px; height: 20px; background: var(--border2); margin: 0 2px; }
+    /* Topbar rekap */
+    .rekap-topbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 1rem 1.25rem;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      flex-wrap: wrap;
+    }
+    .rekap-topbar-brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+    .rekap-topbar-logo { width: 32px; height: 32px; border-radius: 9px; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 8px rgba(59,130,230,.3); }
+    .rekap-topbar-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .rekap-topbar-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.02em; }
+    .rekap-topbar-sub { font-size: 11px; color: var(--text3); font-weight: 500; margin-top: 1px; }
+
+    /* Period nav */
+    .rekap-period {
+      display: flex; align-items: center; gap: 0;
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: var(--radius-lg); overflow: hidden;
+      margin-bottom: 1.75rem; box-shadow: var(--shadow-sm);
+    }
+    .rekap-period-btn {
+      width: 40px; height: 40px; border: none; background: none;
+      cursor: pointer; color: var(--text2); font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .13s; flex-shrink: 0; font-family: inherit;
+    }
+    .rekap-period-btn:hover { background: var(--bg3); color: var(--text); }
+    .rekap-period-center {
+      flex: 1; text-align: center; padding: 0 1rem;
+      border-left: 1px solid var(--border2); border-right: 1px solid var(--border2);
+    }
+    .rekap-period-label { font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .rekap-period-range { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -.02em; margin-top: 1px; }
+
+    /* Grand total summary row */
+    .rekap-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px; margin-bottom: 2rem;
+    }
+    .rekap-sum-card {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: var(--radius-lg); padding: 1rem 1.25rem;
+      display: flex; align-items: center; gap: 1rem;
+      box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+    }
+    .rekap-sum-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.02) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .rekap-sum-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .rekap-sum-icon-kar  { background: rgba(82,154,255,.12); border: 1px solid rgba(82,154,255,.2); }
+    .rekap-sum-icon-susu { background: rgba(82,154,255,.12); border: 1px solid rgba(82,154,255,.2); }
+    .rekap-sum-icon-kopi { background: rgba(217,119,6,.12);  border: 1px solid rgba(217,119,6,.2); }
+    .rekap-sum-icon-mie  { background: rgba(67,201,122,.12); border: 1px solid rgba(67,201,122,.2); }
+    .rekap-sum-body { }
+    .rekap-sum-val {
+      font-size: 30px; font-weight: 700; line-height: 1;
+      letter-spacing: -.04em; font-family: 'IBM Plex Mono', monospace;
+    }
+    .rekap-sum-val-blue  { color: var(--info); }
+    .rekap-sum-val-amber { color: var(--amber); }
+    .rekap-sum-val-green { color: var(--success); }
+    .rekap-sum-lbl { font-size: 10px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .07em; margin-top: 3px; }
+
+    /* Workcenter section header */
+    .wc-section {
+      margin-bottom: 2.25rem;
+    }
+    .wc-section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 1rem; padding: 10px 14px;
+      border-radius: var(--radius);
+    }
+    .wc-section-header-asm { background: rgba(22,163,74,.06); border: 1px solid rgba(22,163,74,.16); }
+    .wc-section-header-inj { background: rgba(220,38,38,.05); border: 1px solid rgba(220,38,38,.13); }
+    .wc-section-name {
+      font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .wc-section-name-asm { color: #15803d; }
+    .wc-section-name-inj { color: #b91c1c; }
+    .wc-section-count { font-size: 11px; color: var(--text3); font-weight: 500; }
+    .wc-section-divider { flex: 1; height: 1px; }
+    .wc-section-divider-asm { background: rgba(22,163,74,.15); }
+    .wc-section-divider-inj { background: rgba(220,38,38,.12); }
+    .wc-section-total {
+      font-size: 11px; font-weight: 700; color: var(--text2);
+      background: var(--bg3); border: 1px solid var(--border2);
+      padding: 3px 10px; border-radius: 100px;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* Shift card premium */
+    .shift-card-premium {
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: var(--radius-lg); overflow: hidden;
+      margin-bottom: 12px; box-shadow: var(--shadow-sm);
+    }
+    .shift-card-premium-s1 { border-top: 2px solid #1d4ed8; }
+    .shift-card-premium-s2 { border-top: 2px solid #7c3aed; }
+    .shift-card-premium-s3 { border-top: 2px solid #d97706; }
+
+    .shift-head-premium { display: flex; align-items: center; padding: 12px 16px; gap: 12px; border-bottom: 1px solid var(--border2); flex-wrap: wrap; }
+    .shift-head-premium-s1 { background: rgba(29,78,216,.05); }
+    .shift-head-premium-s2 { background: rgba(124,58,237,.05); }
+    .shift-head-premium-s3 { background: rgba(217,119,6,.05); }
+
+    .shift-head-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+    .shift-karyawan-count {
+      font-size: 12px; color: var(--text2); font-weight: 500;
+    }
+    .shift-karyawan-count strong { color: var(--text); font-family: 'IBM Plex Mono', monospace; }
+
+    /* Jatah totals inline */
+    .shift-jatah-row {
+      display: flex; gap: 6px; align-items: center;
+    }
+    .shift-jatah-chip {
+      display: flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 100px;
+      font-size: 12px; font-weight: 700;
+      font-family: 'IBM Plex Mono', monospace;
+    }
+    .shift-jatah-chip-susu { background: rgba(82,154,255,.12); color: var(--info); border: 1px solid rgba(82,154,255,.2); }
+    .shift-jatah-chip-kopi { background: rgba(217,119,6,.12); color: var(--amber); border: 1px solid rgba(217,119,6,.2); }
+    .shift-jatah-chip-mie  { background: rgba(67,201,122,.12); color: var(--success); border: 1px solid rgba(67,201,122,.2); }
+    .shift-jatah-chip-lbl { font-size: 9px; font-weight: 700; opacity: .7; letter-spacing: .04em; }
+
+    /* Table premium */
+    .rekap-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .rekap-table th {
+      padding: 9px 14px; background: var(--bg3);
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: .08em;
+      border-bottom: 1px solid var(--border2); text-align: left;
+      white-space: nowrap;
+    }
+    .rekap-table th.center { text-align: center; }
+    .rekap-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text); vertical-align: middle;
+    }
+    .rekap-table tr:last-child td { border-bottom: none; }
+    .rekap-table tbody tr:hover td { background: rgba(255,255,255,.025); }
+    /* Group row */
+    .rekap-grp-row td {
+      background: var(--bg3); padding: 5px 14px;
+      border-bottom: 1px solid var(--border2); border-top: 1px solid var(--border2);
+    }
+    .rekap-grp-row:hover td { background: var(--bg3) !important; }
+    /* Subtotal row */
+    .rekap-sub-row td {
+      background: rgba(255,255,255,.02);
+      font-size: 12px; font-weight: 600; color: var(--text2);
+      border-top: 1px solid var(--border2);
+    }
+    .rekap-sub-row:hover td { background: rgba(255,255,255,.02) !important; }
+    /* Total row */
+    .rekap-total-row td {
+      background: var(--bg4) !important;
+      font-weight: 700; font-size: 12px; color: var(--text);
+      border-top: 2px solid var(--border2);
+    }
+    .rekap-total-row:hover td { background: var(--bg4) !important; }
+    .rekap-num { text-align: center; font-family: 'IBM Plex Mono', monospace; font-weight: 700; }
+    .rekap-num-susu { color: var(--info); }
+    .rekap-num-kopi { color: var(--amber); }
+    .rekap-num-mie  { color: var(--success); }
+    .rekap-th-susu { color: var(--info) !important; }
+    .rekap-th-kopi { color: var(--amber) !important; }
+    .rekap-th-mie  { color: var(--success) !important; }
+    .rekap-hadir { font-size: 12px; color: var(--text2); }
+    .rekap-hadir strong { font-family: 'IBM Plex Mono', monospace; color: var(--text); font-size: 13px; }
+
+    /* ── SECTION BLOCKS (mandor/superadmin tetap pakai ini) ─────── */
+    .wc-block { margin-bottom: 2.25rem; }
+    .wc-title {
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 16px; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--text3);
+    }
+    .divline { flex: 1; height: 1px; background: var(--border2); }
+    .sh-block { margin-bottom: 1.25rem; }
+    .shift-card {
+      border: 1px solid var(--border2);
+      border-left: 3px solid var(--border2);
+      border-radius: var(--radius-lg);
+      overflow: hidden; margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm); background: var(--bg2);
+    }
+    .shift-card-1 { border-left-color: var(--info2); }
+    .shift-card-2 { border-left-color: #7c3aed; }
+    .shift-card-3 { border-left-color: #d97706; }
+    /* Header shift card ikut warna shift */
+    .shift-card-1 .shift-card-head { background: rgba(29,78,216,.06); border-bottom-color: rgba(29,78,216,.12); }
+    .shift-card-2 .shift-card-head { background: rgba(124,58,237,.06); border-bottom-color: rgba(124,58,237,.12); }
+    .shift-card-3 .shift-card-head { background: rgba(217,119,6,.06);  border-bottom-color: rgba(217,119,6,.12); }
+    .shift-card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 13px 16px; background: var(--bg3);
+      border-bottom: 1px solid var(--border2); flex-wrap: wrap; gap: 8px;
+    }
+    .shift-card-head-left { display: flex; align-items: center; gap: 8px; }
+    .shift-stats { display: flex; gap: 24px; }
+    .sstat { display: flex; flex-direction: column; align-items: center; }
+    .sstat-val { font-size: 28px; font-weight: 700; color: var(--info); line-height: 1; letter-spacing: -.03em; font-family: 'IBM Plex Mono', monospace; }
+    .sstat-lbl { font-size: 10px; color: var(--text3); margin-top: 3px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* ── MISC ────────────────────────────────────────────────── */
+    .empty { text-align: center; padding: 3rem 1rem; color: var(--text3); font-size: 13px; }
+    .help { font-size: 11px; color: var(--text3); margin-top: 10px; }
+    .slbl { font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .875rem; }
+    .toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--bg4); color: var(--text);
+      border: 1px solid var(--border2);
+      padding: 11px 18px; border-radius: var(--radius);
+      font-size: 13px; font-weight: 500;
+      box-shadow: var(--shadow-lg);
+      opacity: 0; transition: opacity .25s, transform .25s;
+      pointer-events: none; z-index: 999;
+      transform: translateY(8px);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .install-banner {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(120px);
+      background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: 16px; padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: var(--shadow-lg); z-index: 998;
+      transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+      min-width: 280px; max-width: 360px;
+    }
+    .install-banner.show { transform: translateX(-50%) translateY(0); }
+    .install-banner-icon { width: 42px; height: 42px; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+    .install-banner-icon img { width: 100%; height: 100%; object-fit: cover; }
+    .install-banner-text { flex: 1; }
+    .install-banner-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--text); }
+    .install-banner-text span { font-size: 11px; color: var(--text3); }
+    .install-banner-btn { background: var(--info2); color: #fff; border: none; border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; letter-spacing: .04em; font-family: inherit; }
+    .install-banner-btn:hover { background: var(--info); }
+    .install-banner-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0 2px; line-height: 1; flex-shrink: 0; }
+    .alert { padding: 11px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 1rem; border: 1px solid; }
+    .alert-info { background: var(--info-bg); color: var(--info); border-color: rgba(82,154,255,.22); }
   </style>
 </head>
-<body class="tail-container min-h-screen">
-
-<div id="app" class="max-w-[1280px] mx-auto"></div>
-
-<!-- Toast -->
-<div id="toast" onclick="this.classList.add('hidden')" class="hidden fixed bottom-6 right-6 z-[9999] px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-white"></div>
-
-<!-- Install banner -->
-<div id="install-banner" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 glass border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-5 max-w-sm w-full flex items-center gap-4 z-[9999]">
-  <img src="logo.jpg" class="w-12 h-12 rounded-2xl" alt="logo">
-  <div class="flex-1">
-    <p class="font-semibold text-lg">Install Jatah Karyawan</p>
-    <p class="text-sm text-zinc-500 dark:text-zinc-400">Tambahkan ke layar utama untuk akses cepat</p>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast"></div>
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-icon"><img src="logo.jpg" alt="logo"></div>
+  <div class="install-banner-text">
+    <strong>Install Jatah Karyawan</strong>
+    <span>Tambahkan ke layar utama</span>
   </div>
-  <button onclick="triggerInstall()" class="bg-sky-600 hover:bg-sky-700 text-white px-6 py-3 rounded-2xl font-semibold text-sm">Install</button>
-  <button onclick="document.getElementById('install-banner').classList.add('hidden')" class="text-2xl text-zinc-400 hover:text-zinc-600 px-2">×</button>
+  <button class="install-banner-btn" id="install-btn">Install</button>
+  <button class="install-banner-close" id="install-close">×</button>
 </div>
 
 <script>
 // ============================================================
-// CONFIG
+// CONFIG — Ganti dengan credentials Supabase project kamu
 // ============================================================
-const SUPABASE_URL = 'https://yhyiljuplidjpzhapotk.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeWlsanVwbGlkanB6aGFwb3RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwOTkwNDAsImV4cCI6MjA5MDY3NTA0MH0.Y8viOJo3K_ptcPQ5el0HtK_JrptRTKymUaNqxOqzrS8';
+const SUPABASE_URL  = 'https://yhyiljuplidjpzhapotk.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeWlsanVwbGlkanB6aGFwb3RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwOTkwNDAsImV4cCI6MjA5MDY3NTA0MH0.Y8viOJo3K_ptcPQ5el0HtK_JrptRTKymUaNqxOqzrS8';
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Tailwind config (modern look)
-function initTailwind() {
-  tailwind.config = {
-    content: ["./**/*.{html,js}"],
-    theme: {
-      extend: {
-        fontFamily: {
-          sans: ['Inter', 'sans-serif'],
-          display: ['Space Grotesk', 'sans-serif']
-        }
-      }
-    }
-  }
-}
-
-// State tetap sama
+// ============================================================
+// STATE
+// ============================================================
 let state = {
-  screen: 'loading',
-  role: null,
+  screen: 'loading',  // loading | home | loginMandor | loginSuper | app
+  role: null,         // null | operator | mandor | superadmin
   user: null,
   profile: null,
-  mandorWC: '', mandorShift: 0, mandorNama: '',
+  // mandor scope (from profile)
+  mandorWC: '',
+  mandorShift: 0,
+  mandorNama: '',
+  // tabs
   mandorTab: 'hadir',
   adminTab: 'karyawan',
+  // data cache
   karyawan: [],
-  kehadiran: {},
-  mandors: [],
+  kehadiran: {},   // { karyawan_id: { week_start: [bool x6] } }
+  mandors: [],     // for superadmin user management
+  // week
   week: getMonday(new Date()),
+  // form
   form: { nama: '', tipe: 'Tiger', shift: '1', lokasi: 'Assembling', susu: true, kopi: false, mie: false },
   mandorForm: { nama: '', username: '', password: '', workcenter: 'Assembling', shift: '1' },
   loginForm: { email: '', password: '', err: '' },
-  editingKaryawanId: null,
-  rekapFilter: { wc: 'all', shift: 'all' },
-  searchHadir: '',
-  isDark: localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  editingKaryawanId: null,  // id karyawan yg sedang di-edit nama
+  rekapFilter: { wc: 'all', shift: 'all' },  // filter rekap operator
+  searchHadir: '',  // search nama di input hadir
 };
 
 // ============================================================
-// HELPERS (sama + tambahan modern)
+// HELPERS
 // ============================================================
-function fmtDate(d) { /* sama */ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
-function getMonday(d) { /* sama */ }
-function addDays(wk, n) { /* sama */ }
-function fmt(d) { return d.getDate() + '/' + (d.getMonth()+1); }
-function fmtLong(d) { return d.toLocaleDateString('id-ID', {day:'numeric', month:'long'}); }
+function fmtDate(d) {
+  // Format local date as YYYY-MM-DD (bukan UTC, hindari timezone shift)
+  return d.getFullYear() + '-'
+    + String(d.getMonth() + 1).padStart(2, '0') + '-'
+    + String(d.getDate()).padStart(2, '0');
+}
 
-function showToast(msg, type = 'success') {
+function getMonday(d) {
+  const day = d.getDay(), diff = day === 0 ? -6 : 1 - day;
+  const m = new Date(d); m.setDate(d.getDate() + diff);
+  return fmtDate(m);
+}
+
+function addDays(wk, n) {
+  const d = new Date(wk + 'T00:00:00'); d.setDate(d.getDate() + n); return d;
+}
+
+function fmt(d) { return d.getDate() + '/' + (d.getMonth() + 1); }
+
+function fmtLong(d) {
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
+}
+
+function wcBadge(wc) { return wc === 'Assembling' ? 'asm' : 'inj'; }
+
+function showToast(msg, dur = 2500) {
   const t = document.getElementById('toast');
-  t.innerHTML = `
-    <div class="flex items-center gap-3">
-      ${type==='success' ? '🎉' : type==='error' ? '⚠️' : '📣'}
-      <span>${msg}</span>
-    </div>`;
-  t.className = `flex items-center gap-3 px-6 py-4 rounded-3xl shadow-2xl text-white font-medium ${type==='success'?'bg-emerald-500':type==='error'?'bg-red-500':'bg-amber-500'} fixed bottom-6 right-6 z-[9999]`;
-  t.style.display = 'flex';
-  setTimeout(() => t.style.display = 'none', 3000);
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
 }
 
-function confettiBlast() {
-  confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+function getHadir(karId) {
+  return state.kehadiran[karId]?.[state.week] || [false,false,false,false,false,false,false];
+}
+
+function groupKar(lokasi, shift) {
+  return state.karyawan.filter(k => k.lokasi === lokasi && k.shift === shift);
+}
+
+function calcG(lokasi, shift) {
+  const list = groupKar(lokasi, shift);
+  let susu = 0, kopi = 0, mie = 0;
+  list.forEach(k => {
+    const h = getHadir(k.id), n = h.filter(Boolean).length;
+    if (k.dapat_susu) susu += n;
+    if (k.dapat_kopi) kopi += n;
+    if (k.dapat_mie)  mie  += n;
+  });
+  const hasKopi = list.some(k => k.dapat_kopi);
+  const hasMie  = list.some(k => k.dapat_mie);
+  return { susu, kopi, mie, list, hasKopi, hasMie };
+}
+
+// ---- Rekap rows grouped by Tiger / Yayasan ----
+function buildRekapRows(list, hasKopi, hasMie) {
+  const colCount = 4 + (hasKopi?1:0) + (hasMie?1:0);
+  let html = '';
+  ['Tiger','Yayasan'].forEach(tipe => {
+    const grp = list.filter(k => k.tipe === tipe);
+    if (!grp.length) return;
+    let sub = { susu:0, kopi:0, mie:0 };
+    let rowsHtml = '';
+    grp.forEach(k => {
+      const h = getHadir(k.id), n = h.filter(Boolean).length;
+      if (k.dapat_susu) sub.susu += n;
+      if (k.dapat_kopi) sub.kopi += n;
+      if (k.dapat_mie)  sub.mie  += n;
+      rowsHtml += `<tr>
+        <td>${k.nama}</td>
+        <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
+        <td>${n} hari</td>
+        <td>${k.dapat_susu ? n : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
+        ${hasKopi ? `<td class="jatah-val">${k.dapat_kopi ? n : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+        ${hasMie  ? `<td class="jatah-val">${k.dapat_mie  ? n : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+      </tr>`;
+    });
+    html += `<tr style="background:var(--bg2)"><td colspan="${colCount}" style="padding:5px 8px;border-top:0.5px solid var(--border2)">
+      <span class="badge badge-${tipe.toLowerCase()}" style="font-size:10px">${tipe}</span>
+      <span style="color:var(--text3);font-size:10px;margin-left:4px">${grp.length} org</span>
+    </td></tr>`;
+    html += rowsHtml;
+    html += `<tr style="background:var(--bg2)">
+      <td colspan="3" style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text2)">Subtotal ${tipe}</td>
+      <td style="text-align:center;font-weight:600">${sub.susu}</td>
+      ${hasKopi ? `<td style="text-align:center;font-weight:600">${sub.kopi}</td>` : ''}
+      ${hasMie  ? `<td style="text-align:center;font-weight:600">${sub.mie}</td>`  : ''}
+    </tr>`;
+  });
+  return html;
 }
 
 // ============================================================
-// SUPABASE + REALTIME (INI YANG BIKIN KEKINIAN BANGET)
+// SUPABASE DATA LAYER
 // ============================================================
-async function loadKaryawan() { /* sama */ }
-async function loadKehadiran() { /* sama */ }
-async function loadMandors() { /* sama */ }
-async function saveHadir(karId, hari, hadir) { /* sama */ }
-async function addKaryawanDB(data) { 
-  const ok = await /* sama logic */;
-  if (ok) confettiBlast();
-  return ok;
+async function loadKaryawan() {
+  const { data, error } = await sb.from('karyawan').select('*').order('nama');
+  if (error) { console.error(error); return; }
+  state.karyawan = data || [];
 }
 
-// REALTIME SUBSCRIPTION
-let channels = [];
-function subscribeRealtime() {
-  // Hapus channel lama
-  channels.forEach(ch => ch.unsubscribe());
-  channels = [];
+async function loadKehadiran() {
+  // Load kehadiran for current week and 4 weeks back
+  const pastDate = new Date(state.week + 'T00:00:00');
+  pastDate.setDate(pastDate.getDate() - 28);
+  const pastStr = pastDate.toISOString().split('T')[0];
 
-  // Karyawan berubah → refresh
-  const ch1 = sb.channel('db-karyawan')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'karyawan' }, () => {
-      loadKaryawan().then(render);
-      showToast('Data karyawan diupdate realtime', 'info');
-    })
-    .subscribe();
+  const { data, error } = await sb
+    .from('kehadiran')
+    .select('*')
+    .gte('week_start', pastStr);
+  if (error) { console.error(error); return; }
 
-  // Kehadiran berubah → refresh
-  const ch2 = sb.channel('db-kehadiran')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'kehadiran' }, () => {
-      loadKehadiran().then(render);
-    })
-    .subscribe();
+  state.kehadiran = {};
+  (data || []).forEach(row => {
+    if (!state.kehadiran[row.karyawan_id]) state.kehadiran[row.karyawan_id] = {};
+    if (!state.kehadiran[row.karyawan_id][row.week_start]) {
+      state.kehadiran[row.karyawan_id][row.week_start] = [false,false,false,false,false,false,false];
+    }
+    state.kehadiran[row.karyawan_id][row.week_start][row.hari] = row.hadir;
+  });
+}
 
-  channels.push(ch1, ch2);
+async function loadMandors() {
+  const { data, error } = await sb
+    .from('profiles')
+    .select('*')
+    .eq('role', 'mandor')
+    .order('nama');
+  if (error) { console.error(error); return; }
+  state.mandors = data || [];
+}
+
+async function saveHadir(karId, hari, hadir) {
+  const { error } = await sb.from('kehadiran').upsert({
+    karyawan_id: karId,
+    week_start: state.week,
+    hari: hari,
+    hadir: hadir,
+    updated_by: state.user?.id || null,
+    updated_at: new Date().toISOString()
+  }, { onConflict: 'karyawan_id,week_start,hari' });
+  if (error) console.error('saveHadir:', error);
+}
+
+async function addKaryawanDB(data) {
+  const { error } = await sb.from('karyawan').insert({
+    nama: data.nama, tipe: data.tipe,
+    shift: parseInt(data.shift), lokasi: data.lokasi,
+    dapat_susu: data.susu,
+    dapat_kopi: data.kopi || false,
+    dapat_mie:  data.mie  || false,
+    created_by: state.user?.id || null
+  });
+  if (error) { showToast('Gagal menambah karyawan'); console.error(error); return false; }
+  showToast('Karyawan berhasil ditambahkan');
+  await loadKaryawan();
+  return true;
+}
+
+async function deleteKaryawanDB(id) {
+  const { error } = await sb.from('karyawan').delete().eq('id', id);
+  if (error) { showToast('Gagal menghapus'); console.error(error); return; }
+  showToast('Karyawan dihapus');
+  await loadKaryawan();
+  render();
+}
+
+function editNama(id) {
+  state.editingKaryawanId = id;
+  render();
+  setTimeout(() => {
+    const el = document.getElementById('edit-nama-' + id);
+    if (el) { el.focus(); el.select(); }
+  }, 50);
+}
+
+function cancelEditNama() {
+  state.editingKaryawanId = null;
+  render();
+}
+
+async function saveNama(id) {
+  const input = document.getElementById('edit-nama-' + id);
+  if (!input) return;
+  const namaBaru = input.value.trim();
+  if (!namaBaru) { showToast('Nama tidak boleh kosong'); return; }
+
+  // Coba update + select balik untuk verifikasi
+  const { data, error } = await sb
+    .from('karyawan')
+    .update({ nama: namaBaru })
+    .eq('id', id)
+    .select('nama')
+    .single();
+
+  if (error) { showToast('Gagal menyimpan: ' + error.message); return; }
+
+  // Verifikasi nama benar-benar tersimpan
+  if (!data || data.nama !== namaBaru) {
+    showToast('Gagal: perubahan tidak tersimpan (cek RLS policy Supabase)');
+    state.editingKaryawanId = null;
+    await loadKaryawan();
+    render();
+    return;
+  }
+
+  // Reload dari DB biar sinkron
+  await loadKaryawan();
+  state.editingKaryawanId = null;
+  showToast('Nama berhasil diperbarui ke: ' + namaBaru);
+  render();
 }
 
 // ============================================================
-// AUTH (sama)
+// AUTH
 // ============================================================
 async function init() {
-  initTailwind();
-  if (state.isDark) document.documentElement.classList.add('dark');
-  
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await afterLogin(session.user);
   } else {
     state.screen = 'home';
+    // Load data for operator (anon) — parallel
     await Promise.all([loadKaryawan(), loadKehadiran()]);
     render();
   }
 }
 
-async function afterLogin(user) { /* sama */ subscribeRealtime(); }
+async function afterLogin(user) {
+  state.user = user;
+  const { data: profile, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if (error || !profile) {
+    showToast('Profil tidak ditemukan, hubungi superadmin');
+    await sb.auth.signOut();
+    state.screen = 'home'; render(); return;
+  }
+  state.profile = profile;
+  state.role = profile.role;
+  if (profile.role === 'mandor') {
+    state.mandorWC = profile.workcenter;
+    state.mandorShift = profile.shift;
+    state.mandorNama = profile.nama;
+    state.mandorTab = 'hadir';
+  } else {
+    state.adminTab = 'karyawan';
+  }
+  const tasks = [loadKaryawan(), loadKehadiran()];
+  if (profile.role === 'superadmin') tasks.push(loadMandors());
+  await Promise.all(tasks);
+  state.screen = 'app';
+  render();
+}
+
+async function doLoginMandor() {
+  const username = document.getElementById('l-username').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if (!username || !pass) { setLoginErr('Username dan password wajib diisi'); return; }
+  setLoginErr('');
+  const loginBtn = document.getElementById('login-btn');
+  loginBtn.textContent = 'Masuk...'; loginBtn.disabled = true;
+  const email = toFakeEmail(username);
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    setLoginErr('Username atau password salah');
+    loginBtn.textContent = 'Masuk'; loginBtn.disabled = false;
+    return;
+  }
+  await afterLogin(data.user);
+}
+
+async function doLoginSuper() {
+  const email = document.getElementById('l-email').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  if (!email || !pass) { setLoginErr('Email dan password wajib diisi'); return; }
+  setLoginErr('');
+  const loginBtn = document.getElementById('login-btn');
+  loginBtn.textContent = 'Masuk...'; loginBtn.disabled = true;
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    setLoginErr('Email atau password salah');
+    loginBtn.textContent = 'Masuk'; loginBtn.disabled = false;
+    return;
+  }
+  await afterLogin(data.user);
+}
+
+async function doLogout() {
+  state.screen = 'home'; state.role = null; state.user = null; state.profile = null;
+  render();
+  await sb.auth.signOut();
+}
+
+function setLoginErr(msg) {
+  const el = document.getElementById('login-err');
+  if (el) el.textContent = msg;
+}
 
 // ============================================================
-// RENDER + MODERN UI
+// RENDER
 // ============================================================
 function render() {
   document.getElementById('app').innerHTML = buildApp();
@@ -227,154 +1050,1025 @@ function render() {
 }
 
 function buildApp() {
-  if (state.screen === 'loading') return `<div class="flex items-center justify-center min-h-screen"><div class="w-8 h-8 border-4 border-sky-600 border-t-transparent animate-spin rounded-full"></div></div>`;
-  if (state.screen === 'home') return buildHomeModern();
+  if (state.screen === 'loading') return buildLoading();
+  if (state.screen === 'home') return buildHome();
   if (state.screen === 'loginMandor') return buildLoginMandorScreen();
-  if (state.screen === 'loginSuper') return buildLoginSuperScreen();
-  if (state.role === 'operator') return buildOperatorDashboardModern();
-  if (state.role === 'mandor') return buildMandorModern();
-  if (state.role === 'superadmin') return buildSuperAdminModern();
-  return buildHomeModern();
+  if (state.screen === 'loginSuper')  return buildLoginSuperScreen();
+  if (state.role === 'operator') return buildOperatorDashboard();
+  if (state.role === 'mandor') return buildMandor();
+  if (state.role === 'superadmin') return buildSuperAdmin();
+  return buildHome();
 }
 
-// HOME MODERN
-function buildHomeModern() {
+function buildLoading() {
+  return `<div class="loading"><div class="spinner"></div><span style="font-size:13px;color:var(--text2)">Memuat...</span></div>`;
+}
+
+// ---- HOME ----
+function buildHome() {
+  const now = new Date();
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const weekStr = state.week ? state.week : getMonday(now);
+
   return `
-  <div class="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-zinc-950 dark:to-zinc-900 flex">
-    <div class="flex-1 flex flex-col items-center justify-center px-6 py-12">
-      <div class="text-center max-w-md">
-        <div class="inline-flex items-center gap-3 bg-white/80 dark:bg-zinc-800/80 backdrop-blur-xl px-6 py-3 rounded-3xl shadow-inner mb-8">
-          <img src="logo.jpg" class="w-9 h-9 rounded-2xl" alt="">
-          <h1 class="logo-font text-3xl font-bold tracking-tighter">Jatah Karyawan</h1>
-        </div>
-        
-        <h2 class="text-6xl font-bold tracking-tighter text-balance leading-none mb-6">
-          Rekap jatah<br>yang <span class="text-sky-600">hidup</span> realtime
-        </h2>
-        
-        <p class="text-xl text-zinc-600 dark:text-zinc-400 mb-12">Assembling • Injection • 3 Shift • Susu • Kopi • Mie</p>
-        
-        <div class="grid grid-cols-3 gap-4 text-center mb-12">
-          <div class="bg-white/70 dark:bg-zinc-800/70 backdrop-blur-xl rounded-3xl p-6 shadow-inner">
-            <div class="text-4xl font-mono font-bold text-emerald-500">3</div>
-            <div class="text-xs uppercase tracking-widest mt-1">Shift</div>
-          </div>
-          <div class="bg-white/70 dark:bg-zinc-800/70 backdrop-blur-xl rounded-3xl p-6 shadow-inner">
-            <div class="text-4xl font-mono font-bold text-sky-500">2</div>
-            <div class="text-xs uppercase tracking-widest mt-1">Workcenter</div>
-          </div>
-          <div class="bg-white/70 dark:bg-zinc-800/70 backdrop-blur-xl rounded-3xl p-6 shadow-inner">
-            <div class="text-4xl font-mono font-bold text-amber-500">Live</div>
-            <div class="text-xs uppercase tracking-widest mt-1 flex items-center justify-center gap-1"><span class="w-2 h-2 bg-emerald-400 rounded-full live-dot"></span>Realtme</div>
+    <div class="home-outer">
+
+      <!-- Left panel: branding (desktop only) -->
+      <div class="home-left">
+        <div class="home-left-logo">
+          <div class="home-left-logo-img"><img src="logo.jpg" alt="logo"></div>
+          <div class="home-left-logo-text">
+            Jatah Karyawan
+            <span>PT. Tigermandiri Pratama</span>
           </div>
         </div>
 
-        <div onclick="goOperator()" class="card-hover cursor-pointer bg-white dark:bg-zinc-800 rounded-3xl p-8 flex items-center gap-6 hover:ring-4 hover:ring-sky-300 mb-6">
-          <div class="w-14 h-14 bg-sky-100 dark:bg-sky-900 rounded-2xl flex items-center justify-center text-4xl">📊</div>
-          <div class="flex-1 text-left">
-            <div class="font-semibold text-2xl">Lihat Rekap Publik</div>
-            <div class="text-zinc-500">Tanpa login • Update langsung</div>
+        <div class="home-left-headline">
+          Sistem Rekap<br>Jatah <em>Karyawan</em><br>Terintegrasi
+        </div>
+        <p class="home-left-sub">
+          Platform manajemen kehadiran dan distribusi jatah karyawan secara real-time, akurat, dan mudah digunakan oleh tim lapangan.
+        </p>
+
+        <div class="home-stats">
+          <div class="home-stat">
+            <div class="home-stat-val">3</div>
+            <div class="home-stat-lbl">Shift Aktif</div>
           </div>
-          <div class="text-5xl">→</div>
+          <div class="home-stat-div"></div>
+          <div class="home-stat">
+            <div class="home-stat-val">2</div>
+            <div class="home-stat-lbl">Workcenter</div>
+          </div>
+          <div class="home-stat-div"></div>
+          <div class="home-stat">
+            <div class="home-stat-val">3</div>
+            <div class="home-stat-lbl">Jenis Jatah</div>
+          </div>
         </div>
 
-        <div onclick="goLoginMandor()" class="card-hover cursor-pointer bg-white dark:bg-zinc-800 rounded-3xl p-8 flex items-center gap-6 hover:ring-4 hover:ring-emerald-300 mb-6">
-          <div class="w-14 h-14 bg-emerald-100 dark:bg-emerald-900 rounded-2xl flex items-center justify-center text-4xl">✏️</div>
-          <div class="flex-1 text-left">
-            <div class="font-semibold text-2xl">Masuk sebagai Mandor</div>
-            <div class="text-zinc-500">Input hadir & kelola tim</div>
-          </div>
-          <div class="text-5xl">→</div>
-        </div>
-
-        <button onclick="goLoginSuper()" class="w-full py-6 text-sm font-semibold tracking-widest flex items-center justify-center gap-3 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-3xl">
-          <span class="text-xl">🔐</span> SUPERADMIN ACCESS
-        </button>
+        <div class="home-left-deco"></div>
       </div>
-    </div>
-  </div>`;
+
+      <!-- Right panel: access -->
+      <div class="home-right">
+        <div class="home-right-inner">
+
+          <!-- Mobile header -->
+          <div class="home-mobile-header">
+            <div class="home-mobile-logo"><img src="logo.jpg" alt="logo"></div>
+            <div class="home-mobile-title">Jatah Karyawan</div>
+            <div class="home-mobile-sub">PT. Tigermandiri Pratama</div>
+          </div>
+
+          <!-- Week indicator -->
+          <div style="text-align:center;margin-bottom:2rem;">
+            <div class="home-week-pill">
+              <span class="home-week-pill-dot"></span>
+              ${dateStr} &nbsp;·&nbsp; Minggu ${weekStr}
+            </div>
+          </div>
+
+          <div class="home-access-label">Pilih Akses</div>
+
+          <!-- Operator -->
+          <div class="access-card" onclick="goOperator()">
+            <div class="access-card-icon access-card-icon-operator">📊</div>
+            <div class="access-card-body">
+              <div class="access-card-title">Lihat Rekap <span class="access-card-badge">Publik</span></div>
+              <div class="access-card-desc">Dashboard jatah & kehadiran minggu ini. Tidak perlu login.</div>
+            </div>
+          </div>
+
+          <div class="home-or">atau</div>
+
+          <!-- Mandor -->
+          <div class="access-card" onclick="goLoginMandor()">
+            <div class="access-card-icon access-card-icon-mandor">✏️</div>
+            <div class="access-card-body">
+              <div class="access-card-title">Masuk sebagai Mandor <span class="access-card-badge">Login</span></div>
+              <div class="access-card-desc">Input kehadiran dan kelola karyawan grup kamu.</div>
+            </div>
+          </div>
+
+          <!-- Superadmin -->
+          <div class="home-sa">
+            <button onclick="goLoginSuper()">🔐 &nbsp;Superadmin</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>`;
 }
 
-// Operator Dashboard Modern (dengan Chart.js)
-function buildOperatorDashboardModern() {
-  // ... (sama logic calcG dll)
-  // Tapi UI pakai Tailwind full + chart
-  let html = `<div class="p-6">`;
-  // Topbar modern
-  html += `
-  <div class="flex justify-between items-center mb-8">
-    <div class="flex items-center gap-3">
-      <img src="logo.jpg" class="w-9 h-9 rounded-2xl">
-      <div>
-        <h1 class="logo-font text-3xl font-semibold tracking-tighter">Rekap Jatah</h1>
-        <p class="text-sm text-zinc-500">Minggu ${state.week}</p>
+// ---- LOGIN SCREEN ----
+// Mandor: username + password
+function buildLoginMandorScreen() {
+  return `
+    <div class="login-outer"><div class="login-card">
+      <div class="login-icon"><img src="logo.jpg" alt="logo" style="width:100%;height:100%;object-fit:cover;border-radius:16px;"></div>
+      <h2>Masuk sebagai Mandor</h2>
+      <p class="sub">Secure Access Point</p>
+      <div class="login-divider"></div>
+      <div class="field"><label>Username</label>
+        <input type="text" id="l-username" placeholder="Contoh: yani" autocomplete="username" autocapitalize="none">
       </div>
-    </div>
-    <div class="flex items-center gap-3">
-      <button onclick="toggleDarkMode()" class="w-10 h-10 rounded-2xl bg-white dark:bg-zinc-800 flex items-center justify-center text-xl shadow-inner">🌗</button>
-      <button onclick="downloadCSV()" class="flex items-center gap-2 bg-white dark:bg-zinc-800 px-6 h-12 rounded-3xl font-semibold">📤 CSV</button>
-      <button onclick="goHome()" class="px-8 h-12 bg-zinc-900 text-white rounded-3xl font-semibold">Kembali</button>
-    </div>
-  </div>`;
-
-  // Chart summary
-  html += `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <canvas id="trendChart" class="bg-white dark:bg-zinc-800 rounded-3xl p-6 col-span-2"></canvas>
-    <!-- summary cards tetap -->
-  </div>`;
-
-  // Render rest sama seperti sebelumnya tapi dengan class Tailwind yang lebih clean
-  // (saya singkat karena panjang, tapi struktur tetap sama)
-
-  return html + `</div>`;
+      <div class="field"><label>Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="err-msg" id="login-err"></div>
+      <button class="btn btn-block" id="login-btn" onclick="doLoginMandor()">Autentikasi Masuk</button>
+      <div class="back-link"><button onclick="goHome()">← Kembali</button></div>
+    </div></div>`;
 }
 
-// Dark mode toggle
-function toggleDarkMode() {
-  state.isDark = !state.isDark;
-  if (state.isDark) {
-    document.documentElement.classList.add('dark');
-    localStorage.theme = 'dark';
-  } else {
-    document.documentElement.classList.remove('dark');
-    localStorage.theme = 'light';
-  }
+// Superadmin: email + password
+function buildLoginSuperScreen() {
+  return `
+    <div class="login-outer"><div class="login-card">
+      <div class="login-icon">🔐</div>
+      <h2>Superadmin</h2>
+      <p class="sub">Secure Access Point</p>
+      <div class="login-divider"></div>
+      <div class="field"><label>Email</label>
+        <input type="email" id="l-email" placeholder="email@tigermandiri.com" autocomplete="email">
+      </div>
+      <div class="field"><label>Password</label>
+        <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="err-msg" id="login-err"></div>
+      <button class="btn btn-block" id="login-btn" onclick="doLoginSuper()">Autentikasi Masuk</button>
+      <div class="back-link"><button onclick="goHome()">← Kembali</button></div>
+    </div></div>`;
+}
+
+function toFakeEmail(username) {
+  return username.toLowerCase().replace(/[^a-z0-9]/g, '') + '@example.com';
+}
+
+// ---- WEEK NAV ----
+function weekNavHTML() {
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  return `
+    <div class="week-nav">
+      <span class="lbl">Periode:</span>
+      <button class="btn btn-sm" onclick="shiftWeek(-7)">←</button>
+      <span class="range">${fmtLong(days[0])} – ${fmtLong(days[6])}</span>
+      <button class="btn btn-sm" onclick="shiftWeek(7)">→</button>
+    </div>`;
+}
+
+// ---- OPERATOR DASHBOARD ----
+function buildOperatorDashboard() {
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const weekStart = fmtLong(days[0]);
+  const weekEnd   = fmtLong(days[6]);
+  const fWC    = state.rekapFilter.wc;
+  const fShift = state.rekapFilter.shift;
+
+  // Workcenter & shift yang ditampilkan
+  const wcList    = fWC    === 'all' ? ['Assembling','Injection'] : [fWC];
+  const shiftList = fShift === 'all' ? [1,2,3] : [parseInt(fShift)];
+
+  // Grand totals (sesuai filter)
+  let grandKar = 0, grandSusu = 0, grandKopi = 0, grandMie = 0;
+  let hasAnyKopi = false, hasAnyMie = false;
+  wcList.forEach(wc => {
+    shiftList.forEach(sh => {
+      const g = calcG(wc, sh);
+      grandKar  += g.list.length;
+      grandSusu += g.susu;
+      grandKopi += g.kopi;
+      grandMie  += g.mie;
+      if (g.hasKopi) hasAnyKopi = true;
+      if (g.hasMie)  hasAnyMie  = true;
+    });
+  });
+
+  // Active classes filter chips
+  const aWC = (v) => fWC === v ? (v==='Assembling'?'active-asm':'active-inj') : '';
+  const aSh = (v) => fShift === v ? `active-s${v}` : '';
+
+  let html = `
+    <!-- TOPBAR -->
+    <div class="rekap-topbar">
+      <div class="rekap-topbar-brand">
+        <div class="rekap-topbar-logo"><img src="logo.jpg" alt="logo"></div>
+        <div>
+          <div class="rekap-topbar-title">Dashboard Rekap Jatah</div>
+          <div class="rekap-topbar-sub">PT. Tigermandiri Pratama</div>
+        </div>
+      </div>
+      <button class="btn btn-sm btn-primary" onclick="downloadCSV()">↓ CSV</button>
+      <button class="btn btn-sm" onclick="goHome()">← Kembali</button>
+    </div>
+
+    <!-- PERIOD NAV -->
+    <div class="rekap-period">
+      <button class="rekap-period-btn" onclick="prevWeek()">‹</button>
+      <div class="rekap-period-center">
+        <div class="rekap-period-label">Periode Minggu Ini</div>
+        <div class="rekap-period-range">${weekStart} – ${weekEnd}</div>
+      </div>
+      <button class="rekap-period-btn" onclick="nextWeek()">›</button>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="rekap-filter">
+      <span class="rekap-filter-label">Tampilkan:</span>
+      <button class="filter-chip ${fWC==='all'?'active':''}" onclick="setRekapFilter('wc','all')">Semua</button>
+      <button class="filter-chip ${aWC('Assembling')}" onclick="setRekapFilter('wc','Assembling')">🔧 Assembling</button>
+      <button class="filter-chip ${aWC('Injection')}" onclick="setRekapFilter('wc','Injection')">💉 Injection</button>
+      <div class="filter-divider"></div>
+      <button class="filter-chip ${fShift==='all'?'active':''}" onclick="setRekapFilter('shift','all')">Semua Shift</button>
+      <button class="filter-chip ${aSh('1')}" onclick="setRekapFilter('shift','1')">Shift 1</button>
+      <button class="filter-chip ${aSh('2')}" onclick="setRekapFilter('shift','2')">Shift 2</button>
+      <button class="filter-chip ${aSh('3')}" onclick="setRekapFilter('shift','3')">Shift 3</button>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="rekap-summary">
+      <div class="rekap-sum-card">
+        <div class="rekap-sum-icon rekap-sum-icon-kar">👥</div>
+        <div class="rekap-sum-body">
+          <div class="rekap-sum-val rekap-sum-val-blue">${grandKar}</div>
+          <div class="rekap-sum-lbl">Karyawan</div>
+        </div>
+      </div>
+      <div class="rekap-sum-card">
+        <div class="rekap-sum-icon rekap-sum-icon-susu">🥛</div>
+        <div class="rekap-sum-body">
+          <div class="rekap-sum-val rekap-sum-val-blue">${grandSusu}</div>
+          <div class="rekap-sum-lbl">Total Susu</div>
+        </div>
+      </div>
+      ${hasAnyKopi ? `<div class="rekap-sum-card">
+        <div class="rekap-sum-icon rekap-sum-icon-kopi">☕</div>
+        <div class="rekap-sum-body">
+          <div class="rekap-sum-val rekap-sum-val-amber">${grandKopi}</div>
+          <div class="rekap-sum-lbl">Total Kopi</div>
+        </div>
+      </div>` : ''}
+      ${hasAnyMie ? `<div class="rekap-sum-card">
+        <div class="rekap-sum-icon rekap-sum-icon-mie">🍜</div>
+        <div class="rekap-sum-body">
+          <div class="rekap-sum-val rekap-sum-val-green">${grandMie}</div>
+          <div class="rekap-sum-lbl">Total Mie</div>
+        </div>
+      </div>` : ''}
+    </div>`;
+
+  // Per workcenter
+  wcList.forEach(wc => {
+    const isAsm = wc === 'Assembling';
+    const cls   = isAsm ? 'asm' : 'inj';
+    const icon  = isAsm ? '🔧' : '💉';
+    let wcSusu = 0, wcKopi = 0, wcMie = 0, wcKar = 0;
+    shiftList.forEach(sh => { const g = calcG(wc,sh); wcKar+=g.list.length; wcSusu+=g.susu; wcKopi+=g.kopi; wcMie+=g.mie; });
+    if (!wcKar) return;
+
+    const totalStr = `${wcSusu} susu${hasAnyKopi ? ' · '+wcKopi+' kopi' : ''}${hasAnyMie ? ' · '+wcMie+' mie' : ''}`;
+
+    html += `<div class="wc-section">
+      <div class="wc-section-header wc-section-header-${cls}">
+        <span style="font-size:16px">${icon}</span>
+        <span class="wc-section-name wc-section-name-${cls}">${wc}</span>
+        <span class="wc-section-count">${wcKar} karyawan</span>
+        <div class="wc-section-divider wc-section-divider-${cls}"></div>
+        <span class="wc-section-total">${totalStr}</span>
+      </div>`;
+
+    shiftList.forEach(sh => {
+      const g = calcG(wc, sh);
+      if (!g.list.length) return;
+
+      html += `<div class="shift-card-premium shift-card-premium-s${sh}">
+        <div class="shift-head-premium shift-head-premium-s${sh}">
+          <div class="shift-head-left">
+            <span class="badge badge-s${sh}">Shift ${sh}</span>
+            <span class="shift-karyawan-count"><strong>${g.list.length}</strong> karyawan</span>
+          </div>
+          <div class="shift-jatah-row">
+            <div class="shift-jatah-chip shift-jatah-chip-susu">
+              ${g.susu} <span class="shift-jatah-chip-lbl">SUSU</span>
+            </div>
+            ${g.hasKopi ? `<div class="shift-jatah-chip shift-jatah-chip-kopi">${g.kopi} <span class="shift-jatah-chip-lbl">KOPI</span></div>` : ''}
+            ${g.hasMie  ? `<div class="shift-jatah-chip shift-jatah-chip-mie">${g.mie}  <span class="shift-jatah-chip-lbl">MIE</span></div>`  : ''}
+          </div>
+        </div>
+        <div class="table-wrap">
+        <table class="rekap-table"><thead><tr>
+          <th>Nama</th>
+          <th>Tipe</th>
+          <th class="center">Hadir</th>
+          <th class="center rekap-th-susu">🥛 Susu</th>
+          ${g.hasKopi ? '<th class="center rekap-th-kopi">☕ Kopi</th>' : ''}
+          ${g.hasMie  ? '<th class="center rekap-th-mie">🍜 Mie</th>'  : ''}
+        </tr></thead><tbody>`;
+
+      html += buildRekapRowsPremium(g.list, g.hasKopi, g.hasMie);
+
+      html += `<tr class="rekap-total-row">
+          <td colspan="2" style="font-weight:700">Total</td>
+          <td></td>
+          <td class="rekap-num rekap-num-susu">${g.susu}</td>
+          ${g.hasKopi ? `<td class="rekap-num rekap-num-kopi">${g.kopi}</td>` : ''}
+          ${g.hasMie  ? `<td class="rekap-num rekap-num-mie">${g.mie}</td>`   : ''}
+        </tr></tbody></table></div></div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+
+function setRekapFilter(type, val) {
+  state.rekapFilter[type] = val;
   render();
 }
 
-// Attach events (sama + realtime sudah jalan)
-// ... semua function buildMandorModern, buildSuperAdminModern, dll menggunakan Tailwind classes yang lebih clean + glass effect
+function buildRekapRowsPremium(list, hasKopi, hasMie) {
+  let html = '';
+  ['Tiger','Yayasan'].forEach(tipe => {
+    const grp = list.filter(k => k.tipe === tipe);
+    if (!grp.length) return;
+    let sub = { susu:0, kopi:0, mie:0 };
 
-// Contoh buildMandorModern (ringkas)
-function buildMandorModern() {
-  return `
-  <div class="p-6 max-w-screen-xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
-      <div class="flex items-center gap-4">
-        <div class="w-10 h-10 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-2xl">✏️</div>
-        <div>
-          <h1 class="text-3xl font-semibold">${state.mandorNama}</h1>
-          <p class="text-emerald-600">${state.mandorWC} • Shift ${state.mandorShift}</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-x-2">
-        <button onclick="setMandorTab('hadir')" class="${state.mandorTab==='hadir'?'bg-sky-600 text-white':'bg-white dark:bg-zinc-800'} px-8 py-3 rounded-3xl font-medium">Input Hadir</button>
-        <!-- tab lain -->
-        <button onclick="doLogout()" class="px-6 py-3 text-red-500 font-medium">Keluar</button>
-      </div>
-    </div>
-    ${state.mandorTab === 'hadir' ? buildMandorHadir(...) : '...'}
-  </div>`;
+    const grpHadir = grp.filter(k => getHadir(k.id).filter(Boolean).length > 0);
+    if (!grpHadir.length) { grp.forEach(k => { /* hitung subtotal tetap */ const h=getHadir(k.id),n=h.filter(Boolean).length; if(k.dapat_susu)sub.susu+=n;if(k.dapat_kopi)sub.kopi+=n;if(k.dapat_mie)sub.mie+=n; }); return; }
+
+    // Group header row
+    html += `<tr class="rekap-grp-row"><td colspan="${4 + (hasKopi?1:0) + (hasMie?1:0)}" style="padding:5px 14px">
+      <span class="badge badge-${tipe.toLowerCase()}" style="font-size:10px">${tipe}</span>
+      <span style="color:var(--text3);font-size:10px;margin-left:6px">${grp.length} org</span>
+    </td></tr>`;
+
+    grp.forEach(k => {
+      const h = getHadir(k.id), n = h.filter(Boolean).length;
+      if (k.dapat_susu) sub.susu += n;
+      if (k.dapat_kopi) sub.kopi += n;
+      if (k.dapat_mie)  sub.mie  += n;
+      if (n === 0) return; // skip yang belum hadir sama sekali
+      html += `<tr>
+        <td>${k.nama}</td>
+        <td><span class="badge badge-${tipe.toLowerCase()}" style="font-size:9px">${tipe}</span></td>
+        <td class="rekap-hadir"><strong>${n}</strong> <span>hari</span></td>
+        <td class="rekap-num rekap-num-susu">${k.dapat_susu ? n : '<span style="color:var(--text3)">—</span>'}</td>
+        ${hasKopi ? `<td class="rekap-num rekap-num-kopi">${k.dapat_kopi ? n : '<span style="color:var(--text3)">—</span>'}</td>` : ''}
+        ${hasMie  ? `<td class="rekap-num rekap-num-mie">${k.dapat_mie   ? n : '<span style="color:var(--text3)">—</span>'}</td>` : ''}
+      </tr>`;
+    });
+
+    // Subtotal
+    html += `<tr class="rekap-sub-row">
+      <td colspan="3" style="padding-left:14px">Subtotal ${tipe}</td>
+      <td class="rekap-num rekap-num-susu">${sub.susu}</td>
+      ${hasKopi ? `<td class="rekap-num rekap-num-kopi">${sub.kopi}</td>` : ''}
+      ${hasMie  ? `<td class="rekap-num rekap-num-mie">${sub.mie}</td>`   : ''}
+    </tr>`;
+  });
+  return html;
 }
 
-// START APP
+// ---- MANDOR ----
+function buildMandor() {
+  const wc = state.mandorWC, sh = state.mandorShift;
+  return `
+    <div class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-brand-icon">✏️</div>
+        <span class="topbar-title">${state.mandorNama}</span>
+        <span class="badge badge-${wcBadge(wc)}">${wc}</span>
+        <span class="badge badge-s${sh}">Shift ${sh}</span>
+      </div>
+      <button class="btn btn-sm ${state.mandorTab==='hadir'?'active':''}" onclick="setMandorTab('hadir')">Input Hadir</button>
+      <button class="btn btn-sm ${state.mandorTab==='karyawan'?'active':''}" onclick="setMandorTab('karyawan')">Karyawan</button>
+      <button class="btn btn-sm ${state.mandorTab==='rekap'?'active':''}" onclick="setMandorTab('rekap')">Rekap</button>
+      <button class="btn btn-sm" onclick="doLogout()" style="color:var(--text2)">Keluar</button>
+    </div>
+    ${state.mandorTab === 'hadir' ? buildMandorHadir(wc, sh) :
+      state.mandorTab === 'karyawan' ? buildMandorKaryawan(wc, sh) :
+      buildMandorRekap(wc, sh)}`;
+}
+
+function buildMandorHadir(wc, sh) {
+  const listAll = groupKar(wc, sh);
+  if (!listAll.length) return weekNavHTML() + `<div class="empty">Belum ada karyawan. Tambah dulu di tab Karyawan.</div>`;
+
+  const q = (state.searchHadir || '').toLowerCase().trim();
+  const list = q ? listAll.filter(k => k.nama.toLowerCase().includes(q)) : listAll;
+
+  const hasKopi = listAll.some(k => k.dapat_kopi);
+  const hasMie  = listAll.some(k => k.dapat_mie);
+  const days    = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+  const hdrs = dayNames.map((d,i) => `<th class="cb-cell">${d}<br><span style="font-size:10px;font-weight:400;color:var(--text3)">${fmt(days[i])}</span></th>`).join('');
+
+  let html = weekNavHTML();
+
+  // Search bar
+  html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;flex-wrap:wrap;">
+    <div style="position:relative;flex:1;min-width:200px;max-width:320px;">
+      <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none;">🔍</span>
+      <input type="text" id="search-hadir-input"
+        value="${(state.searchHadir||'').replace(/"/g,'&quot;')}"
+        placeholder="Cari nama karyawan..."
+        oninput="state.searchHadir=this.value;render()"
+        style="width:100%;height:36px;padding:0 12px 0 34px;border-radius:var(--radius);border:1.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .15s,box-shadow .15s;"
+        onfocus="this.style.borderColor='var(--info)';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.12)'"
+        onblur="this.style.borderColor='';this.style.boxShadow=''">
+    </div>
+    <span style="font-size:12px;color:var(--text3);font-weight:500;">
+      ${q ? `${list.length} dari ${listAll.length} karyawan` : `${listAll.length} karyawan`}
+    </span>
+    ${q ? `<button onclick="state.searchHadir='';render()" style="background:none;border:1px solid var(--border2);border-radius:var(--radius);height:30px;padding:0 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:inherit;">✕ Reset</button>` : ''}
+  </div>`;
+
+  if (!list.length) {
+    html += `<div class="empty">Tidak ada karyawan dengan nama "<strong>${state.searchHadir}</strong>"</div>`;
+    return html;
+  }
+
+  html += `<div class="table-wrap"><table><thead><tr>
+    <th>Nama</th><th>Tipe</th><th>Susu</th>${hdrs}
+    <th class="num-cell">Hadir</th>
+    ${hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+    ${hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+  </tr></thead><tbody>`;
+
+  list.forEach(k => {
+    const h = getHadir(k.id), tot = h.filter(Boolean).length;
+    // Highlight nama kalau ada query
+    const namaDisplay = q
+      ? k.nama.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
+          '<mark style="background:rgba(37,99,235,.15);color:var(--info);border-radius:3px;padding:0 2px">$1</mark>')
+      : k.nama;
+    html += `<tr>
+      <td>${namaDisplay}</td>
+      <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
+      <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:11px">Ya</span>' : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
+      ${h.map((v,di) => `<td class="cb-cell"><input type="checkbox" ${v?'checked':''} data-kid="${k.id}" data-day="${di}"></td>`).join('')}
+      <td class="num-cell" id="tot-${k.id}">${tot}</td>
+      ${hasKopi ? `<td class="jatah-val" id="kopi-${k.id}">${k.dapat_kopi ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+      ${hasMie  ? `<td class="jatah-val" id="mie-${k.id}">${k.dapat_mie   ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+    </tr>`;
+  });
+  html += `</tbody></table></div>
+  <div class="help">Centang hari karyawan hadir. Jatah dihitung otomatis.</div>`;
+  return html;
+}
+
+function buildMandorKaryawan(wc, sh) {
+  const list = groupKar(wc, sh), f = state.form;
+  const rows = !list.length
+    ? `<tr><td colspan="7"><div class="empty">Belum ada karyawan</div></td></tr>`
+    : list.map((k,i) => {
+        const isEditing = state.editingKaryawanId === k.id;
+        const namaCell = isEditing
+          ? `<td style="padding:6px 10px">
+               <div style="display:flex;gap:6px;align-items:center">
+                 <input id="edit-nama-${k.id}" type="text" value="${k.nama.replace(/"/g,'&quot;')}"
+                   style="height:30px;font-size:13px;padding:4px 8px;border-radius:6px;border:1.5px solid var(--info);background:var(--bg4);color:var(--text);font-family:inherit;width:130px"
+                   onkeydown="if(event.key==='Enter')saveNama('${k.id}');if(event.key==='Escape')cancelEditNama()">
+                 <button class="btn btn-sm btn-primary" onclick="saveNama('${k.id}')">✓</button>
+                 <button class="btn btn-sm" onclick="cancelEditNama()" style="padding:0 8px">✕</button>
+               </div>
+             </td>`
+          : `<td>
+               <div style="display:flex;align-items:center;gap:6px">
+                 ${k.nama}
+                 <button onclick="editNama('${k.id}')" title="Edit nama"
+                   style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;line-height:1;transition:color .13s"
+                   onmouseover="this.style.color='var(--info)'" onmouseout="this.style.color='var(--text3)'">✏️</button>
+               </div>
+             </td>`;
+        return `<tr>
+          <td style="color:var(--text3)">${i+1}</td>
+          ${namaCell}
+          <td><span class="badge badge-${k.tipe.toLowerCase()}">${k.tipe}</span></td>
+          <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+          <td>${k.dapat_kopi ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+          <td>${k.dapat_mie  ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+          <td><button class="btn btn-danger" onclick="deleteKaryawanDB('${k.id}')">Hapus</button></td>
+        </tr>`;
+      }).join('');
+  return `
+    <div class="inline-form">
+      <div class="field"><label>Nama</label><input type="text" id="f-nama" value="${f.nama}" placeholder="Nama karyawan" style="width:140px"></div>
+      <div class="field"><label>Tipe</label><select id="f-tipe">
+        <option ${f.tipe==='Tiger'?'selected':''}>Tiger</option>
+        <option ${f.tipe==='Yayasan'?'selected':''}>Yayasan</option>
+      </select></div>
+      <div class="field"><label>Susu</label>
+        <div class="check-row"><input type="checkbox" id="f-susu" ${f.susu?'checked':''}><label for="f-susu">Ya</label></div>
+      </div>
+      <div class="field"><label>Kopi</label>
+        <div class="check-row"><input type="checkbox" id="f-kopi" ${f.kopi?'checked':''}><label for="f-kopi">Ya</label></div>
+      </div>
+      <div class="field"><label>Mie</label>
+        <div class="check-row"><input type="checkbox" id="f-mie" ${f.mie?'checked':''}><label for="f-mie">Ya</label></div>
+      </div>
+      <button class="btn btn-primary" onclick="addKarMandor()">+ Tambah</button>
+    </div>
+    <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Nama</th><th>Tipe</th><th>Susu</th><th>Kopi</th><th>Mie</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <div class="help">Karyawan otomatis masuk ke ${wc} Shift ${sh}.</div>`;
+}
+
+function buildMandorRekap(wc, sh) {
+  const g = calcG(wc, sh);
+  const colCount = 1 + (g.hasKopi?1:0) + (g.hasMie?1:0);
+  const cols = colCount === 3 ? 'repeat(3,minmax(0,1fr))' : colCount === 2 ? 'repeat(2,minmax(0,1fr))' : 'minmax(0,1fr)';
+  let html = weekNavHTML()
+    + `<div style="margin-bottom:1rem;display:flex;justify-content:flex-end"><button class="btn btn-sm btn-primary" onclick="downloadCSV()">↓ CSV</button></div>`
+    + `<div class="metric-grid" style="grid-template-columns:${cols}">
+    <div class="mc"><div class="mc-lbl">Susu</div><div class="mc-val">${g.susu}</div>
+      <div class="mc-sub">${g.list.filter(k=>k.dapat_susu).length} eligible</div></div>
+    ${g.hasKopi ? `<div class="mc"><div class="mc-lbl">Kopi</div><div class="mc-val">${g.kopi}</div><div class="mc-sub">${g.list.filter(k=>k.dapat_kopi).length} eligible</div></div>` : ''}
+    ${g.hasMie  ? `<div class="mc"><div class="mc-lbl">Mie</div><div class="mc-val">${g.mie}</div><div class="mc-sub">${g.list.filter(k=>k.dapat_mie).length} eligible</div></div>`   : ''}
+  </div><div class="slbl">Detail karyawan</div>`;
+  if (!g.list.length) return html + `<div class="empty">Belum ada karyawan</div>`;
+  html += `<div class="table-wrap"><table><thead><tr>
+    <th>Nama</th><th>Tipe</th><th>Hadir</th><th>Susu</th>
+    ${g.hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+    ${g.hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+  </tr></thead><tbody>`;
+  html += buildRekapRows(g.list, g.hasKopi, g.hasMie);
+  html += `<tr class="subtotal"><td colspan="3">Total</td><td>${g.susu}</td>
+    ${g.hasKopi ? `<td>${g.kopi}</td>` : ''}
+    ${g.hasMie  ? `<td>${g.mie}</td>`  : ''}
+    </tr></tbody></table></div>`;
+  return html;
+}
+
+// ---- SUPERADMIN ----
+function buildSuperAdmin() {
+  return `
+    <div class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-brand-icon">🔐</div>
+        <span class="topbar-title">Superadmin</span>
+      </div>
+      <button class="btn btn-sm ${state.adminTab==='karyawan'?'active':''}" onclick="setAdminTab('karyawan')">Master Karyawan</button>
+      <button class="btn btn-sm ${state.adminTab==='mingguan'?'active':''}" onclick="setAdminTab('mingguan')">Input Mingguan</button>
+      <button class="btn btn-sm ${state.adminTab==='rekap'?'active':''}" onclick="setAdminTab('rekap')">Rekap Semua</button>
+      <button class="btn btn-sm ${state.adminTab==='mandors'?'active':''}" onclick="setAdminTab('mandors')">Akun Mandor</button>
+      <button class="btn btn-sm" onclick="doLogout()" style="color:var(--text2)">Keluar</button>
+    </div>
+    ${state.adminTab === 'karyawan' ? buildMasterAll() :
+      state.adminTab === 'mingguan' ? buildMingguanAll() :
+      state.adminTab === 'rekap'    ? buildRekapAll() :
+      buildManageAccounts()}`;
+}
+
+function buildMasterAll() {
+  const f = state.form;
+  const rows = !state.karyawan.length
+    ? `<tr><td colspan="10"><div class="empty">Belum ada karyawan</div></td></tr>`
+    : state.karyawan.map((k,i) => {
+        const isEditing = state.editingKaryawanId === k.id;
+        const namaCell = isEditing
+          ? `<td style="padding:6px 10px">
+               <div style="display:flex;gap:6px;align-items:center">
+                 <input id="edit-nama-${k.id}" type="text" value="${k.nama.replace(/"/g,'&quot;')}"
+                   style="height:30px;font-size:13px;padding:4px 8px;border-radius:6px;border:1.5px solid var(--info);background:var(--bg4);color:var(--text);font-family:inherit;width:140px"
+                   onkeydown="if(event.key==='Enter')saveNama('${k.id}');if(event.key==='Escape')cancelEditNama()">
+                 <button class="btn btn-sm btn-primary" onclick="saveNama('${k.id}')">✓</button>
+                 <button class="btn btn-sm" onclick="cancelEditNama()" style="padding:0 8px">✕</button>
+               </div>
+             </td>`
+          : `<td>
+               <div style="display:flex;align-items:center;gap:6px">
+                 ${k.nama}
+                 <button onclick="editNama('${k.id}')" title="Edit nama"
+                   style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;line-height:1;transition:color .13s"
+                   onmouseover="this.style.color='var(--info)'" onmouseout="this.style.color='var(--text3)'">✏️</button>
+               </div>
+             </td>`;
+        return `<tr>
+          <td style="color:var(--text3)">${i+1}</td>
+          ${namaCell}
+          <td><span class="badge badge-${k.tipe.toLowerCase()}">${k.tipe}</span></td>
+          <td><span class="badge badge-s${k.shift}">Shift ${k.shift}</span></td>
+          <td><span class="badge badge-${wcBadge(k.lokasi)}">${k.lokasi}</span></td>
+          <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+          <td>${k.dapat_kopi ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+          <td>${k.dapat_mie  ? '<span style="color:var(--success);font-size:12px">Ya</span>' : '<span style="color:var(--text3);font-size:12px">-</span>'}</td>
+          <td><button class="btn btn-danger" onclick="deleteKaryawanDB('${k.id}')">Hapus</button></td>
+        </tr>`;
+      }).join('');
+
+  return `
+    <div class="inline-form">
+      <div class="field"><label>Nama</label><input type="text" id="f-nama" value="${f.nama}" placeholder="Nama karyawan" style="width:130px"></div>
+      <div class="field"><label>Tipe</label><select id="f-tipe">
+        <option ${f.tipe==='Tiger'?'selected':''}>Tiger</option>
+        <option ${f.tipe==='Yayasan'?'selected':''}>Yayasan</option>
+      </select></div>
+      <div class="field"><label>Shift</label><select id="f-shift">
+        <option value="1" ${f.shift==='1'?'selected':''}>Shift 1</option>
+        <option value="2" ${f.shift==='2'?'selected':''}>Shift 2</option>
+        <option value="3" ${f.shift==='3'?'selected':''}>Shift 3</option>
+      </select></div>
+      <div class="field"><label>Lokasi</label><select id="f-lokasi">
+        <option ${f.lokasi==='Assembling'?'selected':''}>Assembling</option>
+        <option ${f.lokasi==='Injection'?'selected':''}>Injection</option>
+      </select></div>
+      <div class="field"><label>Susu</label>
+        <div class="check-row"><input type="checkbox" id="f-susu" ${f.susu?'checked':''}><label for="f-susu">Ya</label></div>
+      </div>
+      <div class="field"><label>Kopi</label>
+        <div class="check-row"><input type="checkbox" id="f-kopi" ${f.kopi?'checked':''}><label for="f-kopi">Ya</label></div>
+      </div>
+      <div class="field"><label>Mie</label>
+        <div class="check-row"><input type="checkbox" id="f-mie" ${f.mie?'checked':''}><label for="f-mie">Ya</label></div>
+      </div>
+      <button class="btn btn-primary" onclick="addKar()">+ Tambah</button>
+    </div>
+    <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Nama</th><th>Tipe</th><th>Shift</th><th>Lokasi</th><th>Susu</th><th>Kopi</th><th>Mie</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+    <div class="help">${state.karyawan.length} karyawan terdaftar.</div>`;
+}
+
+function buildMingguanAll() {
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
+  const hdrs = dayNames.map((d,i) => `<th class="cb-cell">${d}<br><span style="font-size:10px;font-weight:400;color:var(--text3)">${fmt(days[i])}</span></th>`).join('');
+
+  let html = weekNavHTML();
+  ['Assembling','Injection'].forEach(wc => {
+    html += `<div class="wc-block"><div class="wc-title"><span class="badge badge-${wcBadge(wc)}">${wc}</span><div class="divline"></div></div>`;
+    [1,2,3].forEach(sh => {
+      const list = groupKar(wc, sh);
+      if (!list.length) return;
+      const hasKopi = list.some(k => k.dapat_kopi);
+      const hasMie  = list.some(k => k.dapat_mie);
+      html += `<div class="sh-block"><div style="margin-bottom:6px"><span class="badge badge-s${sh}" style="font-size:10px">Shift ${sh}</span></div>
+        <div class="table-wrap"><table><thead><tr>
+          <th>Nama</th><th>Tipe</th><th>Susu</th>${hdrs}
+          <th class="num-cell">Hadir</th>
+          ${hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+          ${hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+        </tr></thead><tbody>`;
+      list.forEach(k => {
+        const h = getHadir(k.id), tot = h.filter(Boolean).length;
+        html += `<tr>
+          <td>${k.nama}</td>
+          <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
+          <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:11px">Ya</span>' : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
+          ${h.map((v,di) => `<td class="cb-cell"><input type="checkbox" ${v?'checked':''} data-kid="${k.id}" data-day="${di}"></td>`).join('')}
+          <td class="num-cell" id="tot-${k.id}">${tot}</td>
+          ${hasKopi ? `<td class="jatah-val" id="kopi-${k.id}">${k.dapat_kopi ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+          ${hasMie  ? `<td class="jatah-val" id="mie-${k.id}">${k.dapat_mie  ? tot : '<span style="color:var(--text3)">-</span>'}</td>` : ''}
+        </tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+
+function buildRekapAll() {
+  let html = weekNavHTML() + `<div style="margin-bottom:1rem;display:flex;justify-content:flex-end"><button class="btn btn-sm btn-primary" onclick="downloadCSV()">↓ CSV</button></div>`;
+  ['Assembling','Injection'].forEach(wc => {
+    html += `<div class="wc-block"><div class="wc-title"><span class="badge badge-${wcBadge(wc)}">${wc}</span><div class="divline"></div></div>`;
+    [1,2,3].forEach(sh => {
+      const g = calcG(wc, sh);
+      if (!g.list.length) return;
+      html += `<div class="shift-card shift-card-${sh}">
+        <div class="shift-card-head">
+          <div class="shift-card-head-left">
+            <span class="badge badge-s${sh}">Shift ${sh}</span>
+            <span style="font-size:12px;color:var(--text2)">${g.list.length} karyawan</span>
+          </div>
+          <div class="shift-stats">
+            <div class="sstat"><div class="sstat-val">${g.susu}</div><div class="sstat-lbl">Susu</div></div>
+            ${g.hasKopi ? `<div class="sstat"><div class="sstat-val">${g.kopi}</div><div class="sstat-lbl">Kopi</div></div>` : ''}
+            ${g.hasMie  ? `<div class="sstat"><div class="sstat-val">${g.mie}</div><div class="sstat-lbl">Mie</div></div>`  : ''}
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr>
+          <th>Nama</th><th>Tipe</th><th>Hadir</th><th>Susu</th>
+          ${g.hasKopi ? '<th class="jatah-head">Kopi</th>' : ''}
+          ${g.hasMie  ? '<th class="jatah-head">Mie</th>'  : ''}
+        </tr></thead><tbody>`;
+      html += buildRekapRows(g.list, g.hasKopi, g.hasMie);
+      html += `<tr class="subtotal"><td colspan="3">Total</td><td>${g.susu}</td>
+        ${g.hasKopi ? `<td>${g.kopi}</td>` : ''}
+        ${g.hasMie  ? `<td>${g.mie}</td>`  : ''}
+        </tr></tbody></table></div></div>`;
+    });
+    html += `</div>`;
+  });
+  return html;
+}
+
+function buildManageAccounts() {
+  const mf = state.mandorForm;
+  const rows = !state.mandors.length
+    ? `<tr><td colspan="5"><div class="empty">Belum ada akun mandor</div></td></tr>`
+    : state.mandors.map((m,i) => `<tr>
+        <td style="color:var(--text3)">${i+1}</td>
+        <td>${m.nama}</td>
+        <td style="color:var(--text2);font-size:12px">${m.username || '-'}</td>
+        <td><span class="badge badge-${wcBadge(m.workcenter)}" style="font-size:10px">${m.workcenter}</span></td>
+        <td><span class="badge badge-s${m.shift}" style="font-size:10px">Shift ${m.shift}</span></td>
+        <td><button class="btn btn-danger" onclick="deleteMandor('${m.id}')">Hapus</button></td>
+      </tr>`).join('');
+
+  return `
+    <div class="slbl">Buat Akun Mandor Baru</div>
+    <div class="inline-form" style="margin-bottom:1.5rem">
+      <div class="field"><label>Nama Mandor</label><input type="text" id="m-nama" value="${mf.nama}" placeholder="Nama lengkap" style="width:140px"></div>
+      <div class="field"><label>Username</label><input type="text" id="m-username" value="${mf.username||''}" placeholder="Contoh: yani" style="width:120px" autocapitalize="none"></div>
+      <div class="field"><label>Password</label><input type="password" id="m-pass" placeholder="Min 6 karakter" style="width:130px"></div>
+      <div class="field"><label>Workcenter</label><select id="m-wc">
+        <option ${mf.workcenter==='Assembling'?'selected':''}>Assembling</option>
+        <option ${mf.workcenter==='Injection'?'selected':''}>Injection</option>
+      </select></div>
+      <div class="field"><label>Shift</label><select id="m-shift">
+        <option value="1" ${mf.shift==='1'?'selected':''}>Shift 1</option>
+        <option value="2" ${mf.shift==='2'?'selected':''}>Shift 2</option>
+        <option value="3" ${mf.shift==='3'?'selected':''}>Shift 3</option>
+      </select></div>
+      <button class="btn btn-primary" id="btn-buat-mandor" onclick="buatAkunMandor()">+ Buat Akun</button>
+    </div>
+    <div class="err-msg" id="mandor-err" style="margin-bottom:1rem"></div>
+    <div class="slbl">Daftar Akun Mandor</div>
+    <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Nama</th><th>Username</th><th>Workcenter</th><th>Shift</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+function attachEvents() {
+  // Checkbox hadir
+  document.querySelectorAll('input[data-kid]').forEach(cb => {
+    cb.addEventListener('change', async function() {
+      const kid = cb.dataset.kid, day = parseInt(cb.dataset.day);
+      if (!state.kehadiran[kid]) state.kehadiran[kid] = {};
+      if (!state.kehadiran[kid][state.week])
+        state.kehadiran[kid][state.week] = [false,false,false,false,false,false,false];
+      state.kehadiran[kid][state.week][day] = cb.checked;
+
+      // Update totals inline
+      const n = state.kehadiran[kid][state.week].filter(Boolean).length;
+      const totEl  = document.getElementById('tot-'  + kid);
+      const kopiEl = document.getElementById('kopi-' + kid);
+      const mieEl  = document.getElementById('mie-'  + kid);
+      const kar    = state.karyawan.find(k => k.id === kid);
+      if (totEl)  totEl.textContent  = n;
+      if (kopiEl) kopiEl.textContent = (kar && kar.dapat_kopi) ? n : '-';
+      if (mieEl)  mieEl.textContent  = (kar && kar.dapat_mie)  ? n : '-';
+
+      // Save to Supabase (non-blocking)
+      await saveHadir(kid, day, cb.checked);
+    });
+  });
+
+  // Enter key on login
+  document.querySelectorAll('#l-username, #l-email, #l-pass').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key !== 'Enter') return;
+      if (document.getElementById('l-username')) doLoginMandor();
+      else doLoginSuper();
+    });
+  });
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function goOperator() { state.role = 'operator'; state.screen = 'app'; render(); }
+function goLoginMandor() { state.screen = 'loginMandor'; render(); }
+function goLoginSuper() { state.screen = 'loginSuper'; render(); }
+function goHome() { state.role = null; state.screen = 'home'; render(); }
+function setMandorTab(t) { state.mandorTab = t; state.searchHadir = ''; render(); }
+function setAdminTab(t) { state.adminTab = t; render(); }
+function shiftWeek(n) {
+  const d = new Date(state.week + 'T00:00:00'); d.setDate(d.getDate() + n);
+  state.week = fmtDate(d); render();
+}
+function prevWeek() { shiftWeek(-7); }
+function nextWeek() { shiftWeek(7); }
+
+async function addKar() {
+  const nama = document.getElementById('f-nama').value.trim();
+  if (!nama) return;
+  const ok = await addKaryawanDB({
+    nama, tipe: document.getElementById('f-tipe').value,
+    shift: document.getElementById('f-shift').value,
+    lokasi: document.getElementById('f-lokasi').value,
+    susu: document.getElementById('f-susu').checked,
+    kopi: document.getElementById('f-kopi').checked,
+    mie:  document.getElementById('f-mie').checked,
+  });
+  if (ok) render();
+}
+
+async function addKarMandor() {
+  const nama = document.getElementById('f-nama').value.trim();
+  if (!nama) return;
+  const ok = await addKaryawanDB({
+    nama, tipe: document.getElementById('f-tipe').value,
+    shift: String(state.mandorShift),
+    lokasi: state.mandorWC,
+    susu: document.getElementById('f-susu').checked,
+    kopi: document.getElementById('f-kopi').checked,
+    mie:  document.getElementById('f-mie').checked,
+  });
+  if (ok) render();
+}
+
+async function buatAkunMandor() {
+  const nama     = document.getElementById('m-nama').value.trim();
+  const username = document.getElementById('m-username').value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  const pass     = document.getElementById('m-pass').value;
+  const wc       = document.getElementById('m-wc').value;
+  const shift    = parseInt(document.getElementById('m-shift').value);
+  const errEl    = document.getElementById('mandor-err');
+  const btn      = document.getElementById('btn-buat-mandor');
+
+  if (!nama || !username || !pass) { errEl.textContent = 'Nama, username, dan password wajib diisi'; return; }
+  if (pass.length < 6) { errEl.textContent = 'Password minimal 6 karakter'; return; }
+
+  errEl.textContent = '';
+  btn.textContent = 'Membuat...'; btn.disabled = true;
+
+  // Konversi username ke fake email untuk Supabase Auth
+  const fakeEmail = toFakeEmail(username);
+
+  // Buat auth user via client terpisah dengan persistSession: false
+  // agar session superadmin di localStorage tidak ketimpa
+  const sbTemp = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+  const { data: signUpData, error: signUpErr } = await sbTemp.auth.signUp({ email: fakeEmail, password: pass });
+  if (signUpErr && !signUpErr.message.includes('already registered')) {
+    errEl.textContent = 'Gagal buat akun: ' + signUpErr.message;
+    btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+  }
+
+  // Kalau signUp tidak beri session (email confirmation masih ON),
+  // atau user sudah ada sebelumnya — coba signIn langsung
+  let session = signUpData?.session;
+  let uid = signUpData?.user?.id;
+  if (!session) {
+    const { data: siData, error: siErr } = await sbTemp.auth.signInWithPassword({ email: fakeEmail, password: pass });
+    if (siErr || !siData.session) {
+      errEl.textContent = 'Matikan "Confirm email" di Supabase: Authentication → Sign In / Providers → Email → toggle OFF "Confirm email"';
+      btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+    }
+    session = siData.session;
+    uid = siData.user.id;
+  }
+
+  if (!uid) {
+    errEl.textContent = 'User ID tidak ditemukan, coba lagi';
+    btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+  }
+
+  // Simpan profil mandor pakai sbTemp (login sebagai mandor itu sendiri)
+  // sehingga RLS policy "user insert own profile" (auth.uid() = id) terpenuhi
+  const { error: profErr } = await sbTemp.from('profiles').upsert({
+    id: uid, nama, username, role: 'mandor', workcenter: wc, shift
+  });
+  if (profErr) {
+    errEl.textContent = 'Akun dibuat tapi profil gagal: ' + profErr.message;
+    btn.textContent = '+ Buat Akun'; btn.disabled = false; return;
+  }
+
+  showToast(`Akun mandor "${nama}" (${username}) berhasil dibuat!`);
+  state.mandorForm = { nama: '', username: '', password: '', workcenter: 'Assembling', shift: '1' };
+  btn.textContent = '+ Buat Akun'; btn.disabled = false;
+  await loadMandors();
+  render();
+}
+
+async function deleteMandor(id) {
+  if (!confirm('Hapus akun mandor ini?')) return;
+  const { error } = await sb.from('profiles').delete().eq('id', id);
+  if (error) { showToast('Gagal hapus: ' + error.message); return; }
+  showToast('Akun mandor dihapus');
+  await loadMandors();
+  render();
+}
+
+function downloadCSV() {
+  let list = [...state.karyawan];
+  let filename = `rekap-jatah-${state.week}`;
+  if (state.role === 'mandor') {
+    list = list.filter(k => k.lokasi === state.mandorWC && k.shift === state.mandorShift);
+    filename = `rekap-${state.mandorWC}-shift${state.mandorShift}-${state.week}`;
+  }
+  list.sort((a,b) => {
+    if (a.lokasi !== b.lokasi) return a.lokasi.localeCompare(b.lokasi);
+    if (a.shift  !== b.shift)  return a.shift - b.shift;
+    if (a.tipe   !== b.tipe)   return a.tipe.localeCompare(b.tipe);
+    return a.nama.localeCompare(b.nama);
+  });
+  const days = [0,1,2,3,4,5,6].map(i => addDays(state.week, i));
+  const dayLabels = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'].map((d,i) => d + ' ' + fmt(days[i]));
+  const headers = ['Nama','Tipe','Shift','Lokasi',...dayLabels,'Total Hadir','Jatah Susu','Jatah Kopi','Jatah Mie'];
+  const rows = list.map(k => {
+    const h = getHadir(k.id), n = h.filter(Boolean).length;
+    return [
+      k.nama, k.tipe, `Shift ${k.shift}`, k.lokasi,
+      ...h.map(v => v ? '1' : '0'),
+      n,
+      k.dapat_susu ? n : 0,
+      k.dapat_kopi ? n : 0,
+      k.dapat_mie  ? n : 0,
+    ];
+  });
+  const csv = '\uFEFF' + [headers, ...rows]
+    .map(row => row.map(c => `"${String(c).replace(/"/g,'""')}"`).join(','))
+    .join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename + '.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  showToast('CSV berhasil didownload');
+}
+
+// ============================================================
+// START
+// ============================================================
 init();
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
 
-// PWA install tetap sama
-// ... (kode install banner sama seperti aslinya)
+// ---- PWA INSTALL PROMPT ----
+let deferredPrompt = null;
+const installBanner = document.getElementById('install-banner');
+const installBtn    = document.getElementById('install-btn');
+const installClose  = document.getElementById('install-close');
 
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Tampilkan banner langsung
+  installBanner.classList.add('show');
+  // Tampilkan tombol di home jika sedang di home
+  const row = document.getElementById('pwa-install-row');
+  if (row) row.style.display = 'block';
+});
+
+installBtn.addEventListener('click', async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBanner.classList.remove('show');
+  if (outcome === 'accepted') showToast('App berhasil diinstall!');
+});
+
+installClose.addEventListener('click', () => {
+  installBanner.classList.remove('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  installBanner.classList.remove('show');
+  deferredPrompt = null;
+  showToast('App berhasil diinstall!');
+});
+
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(({ outcome }) => {
+      deferredPrompt = null;
+      installBanner.classList.remove('show');
+      if (outcome === 'accepted') {
+        showToast('App berhasil diinstall!');
+        const row = document.getElementById('pwa-install-row');
+        if (row) row.style.display = 'none';
+      }
+    });
+  } else {
+    // Fallback: instruksi manual
+    showToast('Klik ikon ⊕ di address bar browser untuk install', 4000);
+  }
+}
+
+// Sembunyikan tombol install kalau sudah jalan sebagai PWA (standalone)
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const row = document.getElementById('pwa-install-row');
+    if (row) row.style.display = 'none';
+  });
+}
 </script>
 </body>
 </html>

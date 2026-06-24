@@ -687,6 +687,9 @@
     .install-banner-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0 2px; line-height: 1; flex-shrink: 0; }
     .alert { padding: 11px 14px; border-radius: var(--radius); font-size: 13px; margin-bottom: 1rem; border: 1px solid; }
     .alert-info { background: var(--info-bg); color: var(--info); border-color: rgba(82,154,255,.22); }
+    /* Row belum diisi */
+    tr.row-belum > td { background: rgba(217,119,6,.045) !important; }
+    tr.row-belum > td:first-child { box-shadow: inset 3px 0 0 rgba(217,119,6,.55); }
   </style>
 </head>
 <body>
@@ -1486,6 +1489,25 @@ function buildMandorHadir(wc, sh) {
     ${q ? `<button onclick="state.searchHadir='';render()" style="background:none;border:1px solid var(--border2);border-radius:var(--radius);height:30px;padding:0 10px;font-size:11px;color:var(--text2);cursor:pointer;font-family:inherit;">✕ Reset</button>` : ''}
   </div>`;
 
+  // Summary bar — hitung dari listAll (bukan list yg terfilter search)
+  let sumSudah = 0, sumBelum = 0, sumSusu = 0, sumKopi = 0, sumMie = 0;
+  listAll.forEach(k => {
+    const n = getHadir(k.id).filter(Boolean).length;
+    if (n > 0) sumSudah++; else sumBelum++;
+    if (k.dapat_susu) sumSusu += n;
+    if (k.dapat_kopi) sumKopi += n;
+    if (k.dapat_mie)  sumMie  += n;
+  });
+  html += `<div id="hadir-summary" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:9px 14px;margin-bottom:1rem;">
+    <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;">Minggu ini</span>
+    <span style="font-size:12px;font-weight:600;color:var(--success)">✓ <strong id="sum-sudah">${sumSudah}</strong> sudah diisi</span>
+    <span style="font-size:12px;font-weight:600;color:${sumBelum > 0 ? 'var(--amber)' : 'var(--text3)'}" id="sum-belum-wrap">${sumBelum > 0 ? '⚠' : '·'} <strong id="sum-belum">${sumBelum}</strong> belum</span>
+    <span style="width:1px;height:14px;background:var(--border2);display:inline-block"></span>
+    <span style="font-size:12px;color:var(--info)">🥛 <strong id="sum-susu">${sumSusu}</strong> susu</span>
+    ${hasKopi ? `<span style="font-size:12px;color:var(--amber)">☕ <strong id="sum-kopi">${sumKopi}</strong> kopi</span>` : ''}
+    ${hasMie  ? `<span style="font-size:12px;color:var(--success)">🍜 <strong id="sum-mie">${sumMie}</strong> mie</span>`  : ''}
+  </div>`;
+
   if (!list.length) {
     html += `<div class="empty">Tidak ada karyawan dengan nama "<strong>${state.searchHadir}</strong>"</div>`;
     return html;
@@ -1505,7 +1527,7 @@ function buildMandorHadir(wc, sh) {
       ? k.nama.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'),
           '<mark style="background:rgba(37,99,235,.15);color:var(--info);border-radius:3px;padding:0 2px">$1</mark>')
       : k.nama;
-    html += `<tr>
+    html += `<tr id="row-${k.id}" ${tot === 0 ? 'class="row-belum"' : ''}>
       <td>${namaDisplay}</td>
       <td><span class="badge badge-${k.tipe.toLowerCase()}" style="font-size:10px">${k.tipe}</span></td>
       <td>${k.dapat_susu ? '<span style="color:var(--success);font-size:11px">Ya</span>' : '<span style="color:var(--text3);font-size:11px">-</span>'}</td>
@@ -1828,8 +1850,48 @@ function attachEvents() {
       if (kopiEl) kopiEl.textContent = (kar && kar.dapat_kopi) ? n : '-';
       if (mieEl)  mieEl.textContent  = (kar && kar.dapat_mie)  ? n : '-';
 
-      // Save to Supabase (non-blocking)
-      await saveHadir(kid, day, cb.checked);
+      // Toggle row highlight
+      const rowEl = document.getElementById('row-' + kid);
+      if (rowEl) rowEl.classList.toggle('row-belum', n === 0);
+
+      // Update summary bar inline
+      const curList = state.karyawan.filter(k =>
+        state.role !== 'mandor' || (k.lokasi === state.mandorWC && k.shift === state.mandorShift)
+      );
+      let ss = 0, sb = 0, ssu = 0, sko = 0, smi = 0;
+      curList.forEach(k => {
+        const n2 = getHadir(k.id).filter(Boolean).length;
+        if (n2 > 0) ss++; else sb++;
+        if (k.dapat_susu) ssu += n2;
+        if (k.dapat_kopi) sko += n2;
+        if (k.dapat_mie)  smi += n2;
+      });
+      const elSs  = document.getElementById('sum-sudah');
+      const elSb  = document.getElementById('sum-belum');
+      const elSbW = document.getElementById('sum-belum-wrap');
+      const elSsu = document.getElementById('sum-susu');
+      const elSko = document.getElementById('sum-kopi');
+      const elSmi = document.getElementById('sum-mie');
+      if (elSs)  elSs.textContent  = ss;
+      if (elSb)  elSb.textContent  = sb;
+      if (elSbW) { elSbW.style.color = sb > 0 ? 'var(--amber)' : 'var(--text3)'; elSbW.innerHTML = (sb > 0 ? '⚠ ' : '· ') + `<strong id="sum-belum">${sb}</strong> belum`; }
+      if (elSsu) elSsu.textContent = ssu;
+      if (elSko) elSko.textContent = sko;
+      if (elSmi) elSmi.textContent = smi;
+
+      // Save to Supabase — revert state + UI kalau gagal
+      const err = await saveHadir(kid, day, cb.checked);
+      if (err) {
+        // Revert state
+        state.kehadiran[kid][state.week][day] = !cb.checked;
+        cb.checked = !cb.checked;
+        // Revert totals inline
+        const nReverted = state.kehadiran[kid][state.week].filter(Boolean).length;
+        if (totEl)  totEl.textContent  = nReverted;
+        if (kopiEl) kopiEl.textContent = (kar && kar.dapat_kopi) ? nReverted : '-';
+        if (mieEl)  mieEl.textContent  = (kar && kar.dapat_mie)  ? nReverted : '-';
+        showToast('❌ Gagal menyimpan: ' + (err.message || 'cek koneksi / Supabase'), 4000);
+      }
     });
   });
 

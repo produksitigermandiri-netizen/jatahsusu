@@ -848,7 +848,7 @@ async function loadKehadiran() {
   // Load kehadiran for current week and 4 weeks back
   const pastDate = new Date(state.week + 'T00:00:00');
   pastDate.setDate(pastDate.getDate() - 28);
-  const pastStr = fmtDate(pastDate);
+  const pastStr = pastDate.toISOString().split('T')[0];
 
   const { data, error } = await sb
     .from('kehadiran')
@@ -885,11 +885,7 @@ async function saveHadir(karId, hari, hadir) {
     updated_by: state.user?.id || null,
     updated_at: new Date().toISOString()
   }, { onConflict: 'karyawan_id,week_start,hari' });
-  if (error) {
-    console.error('saveHadir:', error);
-    return error;
-  }
-  return null;
+  if (error) console.error('saveHadir:', error);
 }
 
 async function addKaryawanDB(data) {
@@ -1393,15 +1389,6 @@ function setRekapFilter(type, val) {
   render();
 }
 
-function updateSearch(val) {
-  state.searchHadir = val;
-  render();
-  setTimeout(() => {
-    const el = document.getElementById('search-hadir-input');
-    if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
-  }, 0);
-}
-
 function buildRekapRowsPremium(list, hasKopi, hasMie) {
   let html = '';
   ['Tiger','Yayasan'].forEach(tipe => {
@@ -1488,7 +1475,7 @@ function buildMandorHadir(wc, sh) {
       <input type="text" id="search-hadir-input"
         value="${(state.searchHadir||'').replace(/"/g,'&quot;')}"
         placeholder="Cari nama karyawan..."
-        oninput="updateSearch(this.value)"
+        oninput="state.searchHadir=this.value;render()"
         style="width:100%;height:36px;padding:0 12px 0 34px;border-radius:var(--radius);border:1.5px solid var(--border2);background:var(--bg2);color:var(--text);font-size:13px;font-family:inherit;transition:border-color .15s,box-shadow .15s;"
         onfocus="this.style.borderColor='var(--info)';this.style.boxShadow='0 0 0 3px rgba(37,99,235,.12)'"
         onblur="this.style.borderColor='';this.style.boxShadow=''">
@@ -1640,7 +1627,7 @@ function buildSuperAdmin() {
 function buildMasterAll() {
   const f = state.form;
   const rows = !state.karyawan.length
-    ? `<tr><td colspan="9"><div class="empty">Belum ada karyawan</div></td></tr>`
+    ? `<tr><td colspan="10"><div class="empty">Belum ada karyawan</div></td></tr>`
     : state.karyawan.map((k,i) => {
         const isEditing = state.editingKaryawanId === k.id;
         const namaCell = isEditing
@@ -1841,19 +1828,8 @@ function attachEvents() {
       if (kopiEl) kopiEl.textContent = (kar && kar.dapat_kopi) ? n : '-';
       if (mieEl)  mieEl.textContent  = (kar && kar.dapat_mie)  ? n : '-';
 
-      // Save to Supabase — revert state + UI kalau gagal
-      const err = await saveHadir(kid, day, cb.checked);
-      if (err) {
-        // Revert state
-        state.kehadiran[kid][state.week][day] = !cb.checked;
-        cb.checked = !cb.checked;
-        // Revert totals inline
-        const nReverted = state.kehadiran[kid][state.week].filter(Boolean).length;
-        if (totEl)  totEl.textContent  = nReverted;
-        if (kopiEl) kopiEl.textContent = (kar && kar.dapat_kopi) ? nReverted : '-';
-        if (mieEl)  mieEl.textContent  = (kar && kar.dapat_mie)  ? nReverted : '-';
-        showToast('❌ Gagal menyimpan: ' + (err.message || 'cek koneksi / Supabase'), 4000);
-      }
+      // Save to Supabase (non-blocking)
+      await saveHadir(kid, day, cb.checked);
     });
   });
 
@@ -1876,11 +1852,9 @@ function goLoginSuper() { state.screen = 'loginSuper'; render(); }
 function goHome() { state.role = null; state.screen = 'home'; render(); }
 function setMandorTab(t) { state.mandorTab = t; state.searchHadir = ''; render(); }
 function setAdminTab(t) { state.adminTab = t; render(); }
-async function shiftWeek(n) {
+function shiftWeek(n) {
   const d = new Date(state.week + 'T00:00:00'); d.setDate(d.getDate() + n);
-  state.week = fmtDate(d);
-  await loadKehadiran();
-  render();
+  state.week = fmtDate(d); render();
 }
 function prevWeek() { shiftWeek(-7); }
 function nextWeek() { shiftWeek(7); }
@@ -1993,14 +1967,6 @@ function downloadCSV() {
   if (state.role === 'mandor') {
     list = list.filter(k => k.lokasi === state.mandorWC && k.shift === state.mandorShift);
     filename = `rekap-${state.mandorWC}-shift${state.mandorShift}-${state.week}`;
-  } else if (state.role === 'operator') {
-    const fWC = state.rekapFilter.wc;
-    const fShift = state.rekapFilter.shift;
-    if (fWC !== 'all') list = list.filter(k => k.lokasi === fWC);
-    if (fShift !== 'all') list = list.filter(k => k.shift === parseInt(fShift));
-    const wcPart = fWC !== 'all' ? '-' + fWC : '';
-    const shPart = fShift !== 'all' ? '-shift' + fShift : '';
-    filename = `rekap-jatah${wcPart}${shPart}-${state.week}`;
   }
   list.sort((a,b) => {
     if (a.lokasi !== b.lokasi) return a.lokasi.localeCompare(b.lokasi);
@@ -2062,4 +2028,47 @@ window.addEventListener('beforeinstallprompt', e => {
 installBtn.addEventListener('click', async () => {
   if (!deferredPrompt) return;
   deferredPrompt.prompt();
-  const { o
+  const { outcome } = await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBanner.classList.remove('show');
+  if (outcome === 'accepted') showToast('App berhasil diinstall!');
+});
+
+installClose.addEventListener('click', () => {
+  installBanner.classList.remove('show');
+});
+
+window.addEventListener('appinstalled', () => {
+  installBanner.classList.remove('show');
+  deferredPrompt = null;
+  showToast('App berhasil diinstall!');
+});
+
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(({ outcome }) => {
+      deferredPrompt = null;
+      installBanner.classList.remove('show');
+      if (outcome === 'accepted') {
+        showToast('App berhasil diinstall!');
+        const row = document.getElementById('pwa-install-row');
+        if (row) row.style.display = 'none';
+      }
+    });
+  } else {
+    // Fallback: instruksi manual
+    showToast('Klik ikon ⊕ di address bar browser untuk install', 4000);
+  }
+}
+
+// Sembunyikan tombol install kalau sudah jalan sebagai PWA (standalone)
+if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+  document.addEventListener('DOMContentLoaded', () => {
+    const row = document.getElementById('pwa-install-row');
+    if (row) row.style.display = 'none';
+  });
+}
+</script>
+</body>
+</html>
